@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import com.jfoenix.validation.RequiredFieldValidator?>
+<?import quant.attendance.widget.drag.DragTextField?>
+<?import org.fxmisc.richtext.StyleClassedTextArea?>
+<?import de.jensd.fx.fontawesome.Icon?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<StackPane fx:id="root"
+		   fx:controller="quant.attendance.ui.MainLayoutController"
+		   xmlns:fx="http://javafx.com/fxml/1"
+		   xmlns="http://javafx.com/javafx/2.2" >
+
+	<VBox>
+		<MenuBar fx:id="menuBar" >
+			<menus>
+				<Menu text="编辑">
+					<items>
+						<MenuItem text="新的部门" onAction="#handleNewDepartmentAction"/>
+						<MenuItem text="新的员工" onAction="#handleNewEmployeeAction"/>
+						<MenuItem text="节假信息" onAction="#handleHolidayAction"/>
+					</items>
+				</Menu>
+				<Menu text="关于">
+					<items>
+						<MenuItem text="关于" onAction="#handleAboutAction"/>
+					</items>
+				</Menu>
+			</menus>
+		</MenuBar>
+		<HBox alignment="TOP_LEFT">
+
+			<JFXTreeTableView fx:id="departmentTable" editable="true" onMouseClicked="#handleDepartmentClick" maxWidth="280"  minWidth="100" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" >
+				<HBox.margin>
+					<Insets  left="2" top="2" bottom="2" right="12"/>
+				</HBox.margin>
+				<columns>
+					<JFXTreeTableColumn fx:id="departmentName"
+										text="部门" minWidth="0" prefWidth="74" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+					<JFXTreeTableColumn fx:id="startTime"
+										text="开始时间" minWidth="0" prefWidth="100" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+					<JFXTreeTableColumn fx:id="endTime"
+										text="结束时间" minWidth="0" prefWidth="100" resizable="false" style="-fx-alignment: center"/>
+				</columns>
+			</JFXTreeTableView>
+
+			<GridPane  alignment="TOP_CENTER"  HBox.hgrow="ALWAYS">
+
+					<DragTextField fx:id="attendanceFile" prefWidth="420" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS"  promptText="请拖动或者选择一个考勤文件" labelFloat="true"  >
+						<GridPane.margin>
+							<Insets  top="24" right="12" bottom="12"/>
+						</GridPane.margin>
+						<validators>
+							<RequiredFieldValidator message="请拖动或者选择一个考勤文件!">
+								<Icon awesomeIcon="WARNING" style="-fx-font-family: FontAwesome;" />
+							</RequiredFieldValidator>
+						</validators>
+					</DragTextField>
+
+					<JFXButton fx:id="fileChoose1" text="..." style="-fx-padding: 0 4 0 4;" GridPane.rowIndex="0" GridPane.columnIndex="1" ripplerFill="#4059A9" GridPane.valignment="BOTTOM">
+						<GridPane.margin>
+							<Insets left="4"  right="4" bottom="4"/>
+						</GridPane.margin>
+					</JFXButton>
+
+					<JFXTreeTableView fx:id="employeeTable" editable="true" prefWidth="520"  minWidth="100" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.vgrow="ALWAYS">
+						<GridPane.margin>
+							<Insets  right="12" top="12"/>
+						</GridPane.margin>
+						<columns>
+							<JFXTreeTableColumn fx:id="departmentEmployeeName"
+												text="部门" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="employeeName"
+												text="员工" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="employeeStartTime"
+												text="开始时间" minWidth="0" prefWidth="160" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="employeeEndTime"
+												text="结束时间" minWidth="0" prefWidth="160" resizable="false" style="-fx-alignment: center"/>
+						</columns>
+					</JFXTreeTableView>
+
+					<Label styleClass="title-label" text="输出信息" style="-fx-font-size: 11px; -fx-padding: 12 12 0 0 " GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+					<StyleClassedTextArea fx:id="messageArea" styleClass="text-area" prefWidth="520" prefHeight="160" style="-fx-font-size: 10" editable="false" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+						<GridPane.margin>
+							<Insets  right="12" top="12" bottom="12"/>
+						</GridPane.margin>
+					</StyleClassedTextArea>
+
+					<HBox alignment="BOTTOM_RIGHT"  GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" style="-fx-padding: 12 12 12 12">
+						<JFXButton fx:id="createButton" text="生成" styleClass="custom-jfx-button-raised">
+							<HBox.margin>
+								<Insets left="12" right="12" />
+							</HBox.margin>
+						</JFXButton>
+						<JFXButton fx:id="exitButton" text="退出" styleClass="custom-jfx-button-raised"/>
+					</HBox>
+
+			</GridPane>
+		</HBox>
+	</VBox>
+	<JFXSnackbar fx:id="snackBar" prefWidth="420" />
+</StackPane>

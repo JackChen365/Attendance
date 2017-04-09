@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import de.jensd.fx.fontawesome.Icon?>
+<?import com.jfoenix.validation.RequiredFieldValidator?>
+<?import quant.attendance.widget.TimeSpinner?>
+<StackPane fx:id="root"
+		   fx:controller="quant.attendance.ui.AddDepartmentController"
+		   xmlns:fx="http://javafx.com/fxml/1"
+		   xmlns="http://javafx.com/javafx/2.2" >
+	<VBox alignment="CENTER">
+
+		<Label fx:id="titleLabel" styleClass="title-label" text="你好 欢迎使用!" style="-fx-font-size: 32px; -fx-padding: 12 12 32 0 "  />
+
+		<GridPane  alignment="CENTER"  >
+
+				<JFXTextField fx:id="departmentField" prefWidth="420" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2" promptText="请输入部门名称" labelFloat="true"  >
+					<GridPane.margin>
+						<Insets bottom="12" left="12" right="12"/>
+					</GridPane.margin>
+					<validators>
+						<RequiredFieldValidator message="请输入部门名称!">
+							<Icon awesomeIcon="WARNING" style="-fx-font-family: FontAwesome;" />
+						</RequiredFieldValidator>
+					</validators>
+				</JFXTextField>
+
+				<Label styleClass="title-label" text="部门作息" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+				<HBox fx:id="weekContainer" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER">
+					<GridPane.margin>
+						<Insets left="12" right="12" />
+					</GridPane.margin>
+					<JFXToggleNode styleClass="toggle-icon1"  selected="true">
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="一"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  selected="true">
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="二"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  selected="true">
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="三"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  selected="true">
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="四"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  selected="true">
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="五"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  >
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="六"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+					<JFXToggleNode styleClass="toggle-icon1"  >
+						<HBox.margin>
+							<Insets left="4" right="4" />
+						</HBox.margin>
+						<Label text="日"  style="-fx-font-size: 13px; -fx-padding: 4 4 4 4 " />
+					</JFXToggleNode>
+				</HBox>
+
+				<Label styleClass="title-label" text="作息时间" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+				<HBox GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" >
+
+					<TimeSpinner fx:id="startTimeSpinner" >
+						<HBox.margin>
+							<Insets left="12" right="12" />
+						</HBox.margin>
+					</TimeSpinner>
+
+					<TimeSpinner fx:id="endTimeSpinner" />
+				</HBox>
+
+
+				<Label styleClass="title-label" text="己添加部门" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+				<JFXTreeTableView fx:id="departmentTable" editable="true"  onMouseClicked="#handleDepartmentClick" prefWidth="420"  minWidth="100" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" >
+					<GridPane.margin>
+						<Insets left="12" right="12" />
+					</GridPane.margin>
+					<columns>
+						<JFXTreeTableColumn fx:id="departmentName"
+											text="部门" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+						<JFXTreeTableColumn fx:id="startTime"
+											text="开始时间" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+						<JFXTreeTableColumn fx:id="endTime"
+											text="结束时间" minWidth="0" prefWidth="120" resizable="false" style="-fx-alignment: center"/>
+					</columns>
+				</JFXTreeTableView>
+
+		</GridPane>
+
+		<HBox alignment="BOTTOM_RIGHT" style="-fx-padding: 24 64 12 12">
+			<JFXButton fx:id="addButton" text="添加" styleClass="custom-jfx-button-raised">
+				<HBox.margin>
+					<Insets left="12" right="12" />
+				</HBox.margin>
+		</JFXButton>
+			<JFXButton fx:id="exitButton" text="开始使用" styleClass="custom-jfx-button-raised"/>
+		</HBox>
+	</VBox>
+
+	<JFXDialog fx:id="dialog">
+		<JFXDialogLayout>
+			<heading>
+				<Label fx:id="dialogTitle"/>
+			</heading>
+			<body>
+				<Label fx:id="dialogContent" />
+			</body>
+			<actions>
+				<JFXButton fx:id="dialogCancelButton" styleClass="dialog-accept" text="取消"/>
+				<JFXButton fx:id="dialogAcceptButton" styleClass="dialog-accept" text="确定"/>
+			</actions>
+		</JFXDialogLayout>
+	</JFXDialog>
+
+	<JFXSnackbar fx:id="snackBar" prefWidth="420" />
+</StackPane>
