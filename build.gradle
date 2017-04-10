@@ -37,13 +37,13 @@ sourceSets {
 }
 
 jfx {
-    mainClass = 'com.quant.test.client.Main'
+    mainClass = 'quant.attendance.Main'
     vendor = 'cz'
 
     jfxMainAppJarName = "project-jfx.jar"
 }
 
-mainClassName="com.quant.test.client.Main"
+mainClassName="quant.attendance.Main"
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"

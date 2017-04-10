@@ -9,11 +9,11 @@ import quant.attendance.callback.InitializableArgs
  * Created by cz on 2017/2/16.
  */
 class StageManager {
-    static final StageManager instance=new StageManager();
+    static final StageManager stageInstance =new StageManager();
     private static final Map<Object,Stage> stageItems=new HashMap<>();
 
-    static final StageManager getInstance(){
-        return instance;
+    public static final StageManager getInstance(){
+        return stageInstance
     }
 
     private StageManager(){
