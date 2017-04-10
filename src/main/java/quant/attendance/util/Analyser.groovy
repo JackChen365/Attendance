@@ -78,25 +78,29 @@ class Analyser {
                 final DayAttendance dayAttendance = new DayAttendance();
                 newAttendanceItem.put(day, dayAttendance);
                 items.each {item ->
-                    Attendance startAttendance = dayAttendance.startAttendance;
-                    Attendance endAttendance = dayAttendance.endAttendance;
                     long startEmployeeTime,endEmployeeTime
                     (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
-                    if (null == startAttendance) {
-                        //默认时间为上午,或者在员工上下班时间内1个小时,且处是为1为常规考虑,2为非常规,比如16点上班员工
-                        if (Math.abs(item.dayTimeMillis-startEmployeeTime) < MIN_TIME_MILLIS) {
-                            dayAttendance.startAttendance = item;//先记录早的
-                        }
-                    } else if (dayAttendance.startAttendance.timeMillis > item.timeMillis) {
+                    if (!dayAttendance.startAttendance&&(item.dayTimeMillis<startEmployeeTime||item.dayTimeMillis-startEmployeeTime<MIN_TIME_MILLIS)) {
+                        //默认时间为上午,员工上班时间小于正常考勤时间即记录,大过的话,显示为迟到.预定在2小时以内
+                        dayAttendance.startAttendance = item;//先记录早的
+                    } else if (dayAttendance.startAttendance&&dayAttendance.startAttendance.timeMillis > item.timeMillis) {
                         dayAttendance.startAttendance = item;
-                    }
-                    if (null == endAttendance) {
-                        //默认为时间在下午,员工下班时间2个小时以内的,算下班打算
-                        if (Math.abs(item.dayTimeMillis-endEmployeeTime) < MIN_TIME_MILLIS) {
-                            dayAttendance.endAttendance = item;//记录晚
-                        }
-                    } else if (dayAttendance.endAttendance.timeMillis < item.timeMillis) {
+                    } else if (!dayAttendance.endAttendance&&(item.dayTimeMillis>endEmployeeTime||endEmployeeTime-item.dayTimeMillis<MIN_TIME_MILLIS)) {
+                        //默认为时间在下午,员工大过考勤时间,或在考勤时间范围内2小时,可能存在早退
+                        dayAttendance.endAttendance = item;//记录晚
+                    } else if (dayAttendance.endAttendance&&dayAttendance.endAttendance.timeMillis < item.timeMillis) {
                         dayAttendance.endAttendance = item;
+                    } else if(!dayAttendance.startAttendance&&!dayAttendance.endAttendance){
+                        //如果两个都为空,则判断条目靠近上午,还是下午
+                        if((item.dayTimeMillis-startEmployeeTime)/2<(endEmployeeTime-startEmployeeTime)){
+                            dayAttendance.startAttendance = item;
+                        } else {
+                            dayAttendance.endAttendance = item;
+                        }
+                    } else if(!dayAttendance.startAttendance){
+                        dayAttendance.startAttendance=item
+                    } else if(!dayAttendance.endAttendance){
+                        dayAttendance.endAttendance=item
                     }
                 }
             }
@@ -137,9 +141,9 @@ class Analyser {
                 boolean isWeekend
                 //部门单独设定员工
                 if(employee){
-                    isWeekend=employee.workDays.contains(dayOfWeek)
+                    isWeekend=!employee.workDays.contains(dayOfWeek)
                 } else {
-                    isWeekend=departmentRest.workDays.contains(dayOfWeek)
+                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)
                 }
                 long startEmployeeTime,endEmployeeTime
                 (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
@@ -199,12 +203,21 @@ class Analyser {
                     if (null != endAttendance) {
                         dayResult.endTime = endAttendance.toString();
                         if (null != startAttendance) {
-                            //根据上班时间计算下班时间是否超时
-                            //工作时长,正常上班总时间为9个小时,加上午休1小时,而三班倒人员,只上8小时,所以这里动态化
-                            if (endAttendance.dayTimeMillis >= endEmployeeTime) {
-                                dayResult.type |= AttendanceType.OFF_WORK;//正常下班
+                            //工作时长,正常上班总时间减去实际时间,如果早上没迟到,则按工作时长计算,否则按下班时间算
+                            if(0!=(dayResult.type&AttendanceType.LATE)){
+                                //早上已经迟到
+                                if (endAttendance.dayTimeMillis>=endEmployeeTime){
+                                    dayResult.type |= AttendanceType.OFF_WORK;//正常下班
+                                } else {
+                                    dayResult.type |= AttendanceType.LEVEL_EARLY;//早退了
+                                }
                             } else {
-                                dayResult.type |= AttendanceType.LEVEL_EARLY;//早退了
+                                //早上未迟到
+                                if (endAttendance.dayTimeMillis-startAttendance.dayTimeMillis >= endEmployeeTime-startEmployeeTime) {
+                                    dayResult.type |= AttendanceType.OFF_WORK;//正常下班
+                                } else {
+                                    dayResult.type |= AttendanceType.LEVEL_EARLY;//早退了
+                                }
                             }
                         } else {
                             //上班未打卡,根据标准时间计算
@@ -221,14 +234,11 @@ class Analyser {
                     }
                     //计算加班
                     if (null != startAttendance && null != endAttendance) {
-                        int type = dayResult.type;
-                        if (type == (type | AttendanceType.TO_WORK) && type == (type | AttendanceType.OFF_WORK)) {
-                            int workMinute = endAttendance.hour * 60 + endAttendance.minute - startAttendance.hour * 60 + startAttendance.minute;
-                            //超出俩小时,算加班
-                            dayResult.overMinute = workMinute - endEmployeeTime;//加班时长(分)
-                            if (dayResult.overMinute >= 2 * 60) {
-                                dayResult.type |= AttendanceType.OVER_TIME;
-                            }
+                        int workMinute = (endAttendance.hour * 60 + endAttendance.minute) - (startAttendance.hour * 60 + startAttendance.minute);
+                        //超出1小时,算加班
+                        dayResult.overMinute = workMinute - (endEmployeeTime-startEmployeeTime)/60/1000;//加班时长(分)
+                        if (dayResult.overMinute >= 2 * 60) {
+                            dayResult.type |= AttendanceType.OVER_TIME;
                         }
                     }
                 } else {

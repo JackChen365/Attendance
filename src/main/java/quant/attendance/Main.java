@@ -6,9 +6,6 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import quant.attendance.prefs.PrefsKey;
 import quant.attendance.prefs.SharedPrefs;
-import quant.attendance.util.TextUtils;
-
-import static com.sun.corba.se.spi.activation.IIOP_CLEAR_TEXT.value;
 
 /**
  * Created by cz on 2017/3/6.

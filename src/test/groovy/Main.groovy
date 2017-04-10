@@ -38,5 +38,11 @@ def readProjectLine(){
     }
 }
 
+def testType(){
+    def var="123"
+    def newVar=var as Integer
+    println newVar.class
+}
+
 //testDate()
-testPattern()
+testType()
