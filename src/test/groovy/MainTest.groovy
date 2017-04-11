@@ -7,12 +7,16 @@ import java.util.regex.Pattern
  * Created by Administrator on 2017/4/9.
  */
 def testPattern(){
-    Pattern pattern = Pattern.compile("((\\d{1,2})[/|-](\\d{1,2})[/|-](\\d{1,4})|(\\d{1,4})[/|-](\\d{1,2})[/|-](\\d{1,2}))\\s+(\\d{1,2}):(\\d{1,2})(:\\d{1,2})?");//匹配日期
-    def matcher=pattern.matcher("2017/3/1  9:28:59")
-    if(matcher.find()){
-        for(int i=1;i<=matcher.groupCount();i++){
-            println matcher.group(i)
-        }
+//    Pattern pattern = Pattern.compile("((\\d{1,2})[/|-](\\d{1,2})[/|-](\\d{1,4})|(\\d{1,4})[/|-](\\d{1,2})[/|-](\\d{1,2}))\\s+(\\d{1,2}):(\\d{1,2})(:\\d{1,2})?");//匹配日期
+//    def matcher=pattern.matcher("2017/3/1  9:28:59")
+//    if(matcher.find()){
+//        for(int i=1;i<=matcher.groupCount();i++){
+//            println matcher.group(i)
+//        }
+//    }
+    def matcher="4-1(W),4-2,4-3,4-4"=~/((\d{1,2})-(\d{1,2})(\((W)\))?),?/
+    while(matcher.find()){
+        println matcher.group(2)+" "+matcher.group(3)+" "+matcher.group(5)
     }
 }
 
@@ -45,4 +49,4 @@ def testType(){
 }
 
 //testDate()
-testType()
+testPattern()

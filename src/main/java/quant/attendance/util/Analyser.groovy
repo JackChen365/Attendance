@@ -8,6 +8,7 @@ import quant.attendance.model.DayAttendance
 import quant.attendance.model.DepartmentRest
 import quant.attendance.model.Employee
 import quant.attendance.model.EmployeeRest
+import quant.attendance.model.HolidayItem
 
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -21,8 +22,9 @@ class Analyser {
     final long MIN_TIME_MILLIS=2*60*60*1000
     DepartmentRest departmentRest
     LocalDateTime startDateTime,endDateTime
+    List<HolidayItem> holidayItems=[]
 
-    public Analyser(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,DepartmentRest departmentRest, List<EmployeeRest> employeeRests) {
+    public Analyser(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,DepartmentRest departmentRest, List<EmployeeRest> employeeRests,holidayItems) {
         if (!attendanceItems) {
             InformantRegistry.instance.notifyMessage("员工出勤信息不存在,请文件是否存在,及员工格式!");
         } else {
@@ -30,6 +32,7 @@ class Analyser {
         }
         this.departmentRest=departmentRest
         this.employeeItems.addAll(employeeRests)
+        !holidayItems?:this.holidayItems.addAll(holidayItems)
         //分析出勤日期
         (startDateTime,endDateTime)=analyzerDate()
     }
@@ -133,23 +136,25 @@ class Analyser {
 
         LocalDateTime newDateTime=startDateTime
         while(!newDateTime.toLocalDate().equals(endDateTime.toLocalDate())){
-            final int today = newDateTime.dayOfMonth;
+            final int month=newDateTime.monthValue
+            final int dayOfMonth = newDateTime.dayOfMonth;
             final int dayOfWeek = newDateTime.dayOfWeek.value
+            final def findHolidayItem=holidayItems.find {it.month==month&&it.day==dayOfMonth}
             newAttendanceItems.each {name, items->
                 EmployeeRest employee = employeeItems.find{it.employeeName==name}
                 //自定义设置休息
                 boolean isWeekend
-                //部门单独设定员工
+                //部门单独设定员工,假日条目
                 if(employee){
-                    isWeekend=!employee.workDays.contains(dayOfWeek)
+                    isWeekend=!employee.workDays.contains(dayOfWeek)||!findHolidayItem.isWork
                 } else {
-                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)
+                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)||!findHolidayItem.isWork
                 }
                 long startEmployeeTime,endEmployeeTime
                 (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
                 //分析休息时间,判定当天是否为休息时间,休息则定为加班
-                DayAttendance dayAttendance = items.get(today);
-                final AttendanceResult dayResult = new AttendanceResult(name, today);
+                DayAttendance dayAttendance = items.get(dayOfMonth);
+                final AttendanceResult dayResult = new AttendanceResult(name, dayOfMonth);
                 //分析结果集
                 if (null != dayAttendance) {
                     HashMap<Integer, AttendanceResult> resultItems = results.get(name);
@@ -157,7 +162,7 @@ class Analyser {
                         resultItems = new HashMap<>();
                         results.put(name, resultItems);
                     }
-                    resultItems.put(today, dayResult);
+                    resultItems.put(dayOfMonth, dayResult);
                 }
                 //标准上班下班时间值(分)
                 if (isWeekend) {

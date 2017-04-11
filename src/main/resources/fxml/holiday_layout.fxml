@@ -3,16 +3,10 @@
 
 <?import com.jfoenix.controls.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
 <?import com.jfoenix.validation.RequiredFieldValidator?>
 <?import quant.attendance.widget.drag.DragTextField?>
-<?import org.fxmisc.richtext.StyleClassedTextArea?>
 <?import de.jensd.fx.fontawesome.Icon?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
 <StackPane fx:id="root"
 		   fx:controller="quant.attendance.ui.HolidayController"
 		   xmlns:fx="http://javafx.com/fxml/1"
@@ -24,7 +18,7 @@
 
 			<DragTextField fx:id="propertyField" prefWidth="420" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS"  promptText="请拖动或者选择一个日期配置文件" labelFloat="true"  >
 				<GridPane.margin>
-					<Insets  top="24" right="12" bottom="12"/>
+					<Insets  top="24" left="12" right="8" bottom="12"/>
 				</GridPane.margin>
 				<validators>
 					<RequiredFieldValidator message="请拖动或者选择一个日期配置文件!">
@@ -35,15 +29,17 @@
 
 			<JFXButton fx:id="fileChoose" text="..." style="-fx-padding: 0 4 0 4;" GridPane.rowIndex="0" GridPane.columnIndex="1" ripplerFill="#4059A9" GridPane.valignment="BOTTOM">
 				<GridPane.margin>
-					<Insets left="4"  right="4" bottom="4"/>
+					<Insets left="4"  right="8" bottom="8"/>
 				</GridPane.margin>
 			</JFXButton>
 
 			<JFXTreeTableView fx:id="holidayTable" editable="true" prefWidth="520"  minWidth="100" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.vgrow="ALWAYS">
 				<GridPane.margin>
-					<Insets  right="12" top="12"/>
+					<Insets left="12"  right="12" top="12" bottom="12"/>
 				</GridPane.margin>
 				<columns>
+					<JFXTreeTableColumn fx:id="yearColumn"
+										text="年份" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
 					<JFXTreeTableColumn fx:id="holidayColumn"
 										text="节日" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
 					<JFXTreeTableColumn fx:id="dateColumn"
@@ -54,11 +50,6 @@
 			</JFXTreeTableView>
 
 			<HBox alignment="BOTTOM_RIGHT"  GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" style="-fx-padding: 12 12 12 12">
-				<JFXButton fx:id="createButton" text="添加节日模板" styleClass="custom-jfx-button-raised">
-					<HBox.margin>
-						<Insets left="12" right="12" />
-					</HBox.margin>
-				</JFXButton>
 				<JFXButton fx:id="exitButton" text="取消" styleClass="custom-jfx-button-raised"/>
 			</HBox>
 

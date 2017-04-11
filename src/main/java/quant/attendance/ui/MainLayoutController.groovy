@@ -24,11 +24,16 @@ import quant.attendance.excel.ExcelWriter
 import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.DepartmentProperty
 import quant.attendance.model.EmployeeProperty
+import quant.attendance.model.HolidayItem
+import quant.attendance.prefs.FilePrefs
 import quant.attendance.scheduler.MainThreadSchedulers
 import quant.attendance.util.Analyser
+import quant.attendance.util.FileUtils
 import quant.attendance.widget.drag.DragTextField
 import rx.Observable
 import rx.schedulers.Schedulers
+
+import java.time.LocalDate
 
 /**
  * Created by Administrator on 2017/4/8.
@@ -149,11 +154,18 @@ class MainLayoutController implements Initializable{
                 def attendanceItems=new ExcelReader().attendanceRead(file)
                 def selectDepartment=departmentTable.selectionModel.selectedItem.value.toItem()
                 def selectEmployeeItems=employeeItems.findAll {it.departmentId==selectDepartment.id}
-                def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems)
-                def result=analyser.result()
-                def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems)
-                excelWriter.writeExcel()
-                sub.onNext(true)
+                //获得日期模板
+                def holidayItems=getHolidayItems()
+                def holidays=holidayItems.get(LocalDate.now().year)
+                if(!holidays){
+                    //TODO 配置模板提示
+                } else {
+                    def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays)
+                    def result=analyser.result()
+                    def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems)
+                    excelWriter.writeExcel()
+                    sub.onNext(true)
+                }
                 sub.onCompleted()
             }).subscribeOn(Schedulers.io()).
                     observeOn(MainThreadSchedulers.mainThread()).
@@ -161,6 +173,42 @@ class MainLayoutController implements Initializable{
 
                     }, { e -> e.printStackTrace() })
         }
+    }
+
+    /**
+     * 初始化所有的假日条目
+     * @return
+     */
+    def getHolidayItems() {
+        final def holidayItems = [:]
+        def folder = FilePrefs.HOLIDAY_FOLDER
+        folder.listFiles().each {
+            def year,items
+            (year,items)=getPropertiesFileItems(it)
+            holidayItems<<[(year):items]
+        }
+        holidayItems
+    }
+    def getPropertiesFileItems(File file){
+        def matcher = file.name =~ /(\d{4}).+/
+        def year
+        final def holidays = []
+        !matcher ?: (year = Integer.valueOf(matcher[0][1]))
+        def properties = FileUtils.loadProperty(file)
+        properties.each {
+//                1-22(W),1-27,1-28,1-29,1-30,1-31,2-1,2-2,2-4(W)
+            def holiday = it.key
+            matcher = it.value =~ /((\d{1,2})\-(\d{1,2})(\((W)\))?)\s*,?\s*/
+            while (matcher.find()) {
+                def date = matcher.group(1)
+                def month = Integer.valueOf(matcher.group(2))
+                def day = Integer.valueOf(matcher.group(3))
+                def isWord = matcher.group(5)
+                holidays << new HolidayItem(holiday, date, isWord ? "节日工作" : "节日休息",year, month, day, isWord ? true : false)
+            }
+        }
+        holidays.sort {o1,o2-> (o1.month*31+o1.day)-(o2.month*31+o2.day) }
+        [year,holidays]
     }
 
     public void handleDepartmentClick(Event event) {
@@ -180,7 +228,7 @@ class MainLayoutController implements Initializable{
     }
 
     public void handleHolidayAction(ActionEvent actionEvent) {
-
+        StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/holiday_layout.fxml"), 640, 720)?.show()
     }
 
 }
