@@ -13,6 +13,8 @@ class FilePrefs {
     public final static File DATABASE_FOLDER=new File(System.properties["user.home"],DB_PATH)
     public final static File HOLIDAY_FOLDER=new File(System.properties["user.home"],HOLIDAY)
 
+    public final static File HOLIDAY_FILE=new File(HOLIDAY_FOLDER,"2017_holiday.properties")
+
     static {
         ensureFolder(CONFIG_FOLDER, DATABASE_FOLDER,HOLIDAY_FOLDER)
     }

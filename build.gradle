@@ -49,6 +49,10 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile group: 'junit', name: 'junit', version: '4.11'

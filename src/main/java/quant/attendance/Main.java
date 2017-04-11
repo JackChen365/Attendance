@@ -4,8 +4,10 @@ import com.sun.javafx.application.PlatformImpl;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import quant.attendance.prefs.FilePrefs;
 import quant.attendance.prefs.PrefsKey;
 import quant.attendance.prefs.SharedPrefs;
+import quant.attendance.util.FileUtils;
 
 /**
  * Created by cz on 2017/3/6.
@@ -20,7 +22,7 @@ public class Main extends Application {
         StageManager stageManager = StageManager.getInstance();
         boolean init = SharedPrefs.getBoolean(PrefsKey.INIT);
         if(!init){
-//            //初始化配置
+            //初始化配置
             primaryStage.setTitle("Hello!");
             stageManager.stage(primaryStage,init,getClass().getClassLoader().getResource("fxml/add_department.fxml"), 640, 720);
         } else {
@@ -28,6 +30,8 @@ public class Main extends Application {
             primaryStage.setTitle("考勤数据分析");
             stageManager.stage(primaryStage, getClass().getClassLoader().getResource("fxml/main_layout.fxml"), 960, 720);
         }
+        //拷贝节日资料
+        FileUtils.copyResourcesFileIfNotExists(FilePrefs.HOLIDAY_FILE,"assets/2017_holiday.properties");
         //结束监听
         PlatformImpl.addListener(new PlatformImpl.FinishListener() {
             @Override

@@ -13,7 +13,14 @@ class SharedPrefs {
         Properties properties=new Properties()
         def file=new File(FilePrefs.CONFIG_FOLDER,CONFIG_NAME)
         if(file.exists()){
-            properties.load(new FileInputStream(file))
+            def inputStream=new FileInputStream(file)
+            try{
+                properties.load(inputStream)
+            } catch (e){
+                e.printStackTrace()
+            } finally{
+                inputStream.close()
+            }
         }
         properties.put(key,value as String)
         properties.store(new FileOutputStream(file),"save key:$key value:$value")
