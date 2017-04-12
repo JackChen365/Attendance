@@ -52,6 +52,11 @@ public interface AttendanceType {
      * 周末加班了
      */
     int WEEKEND_OVER_TIME = 0x100;
+
+    /**
+     * 节日加班
+     */
+    int HOLIDAY_OVER_TIME=0x200;
     /**
      * 正常上班
      */

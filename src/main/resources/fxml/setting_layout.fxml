@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<StackPane fx:id="root"
+		   fx:controller="quant.attendance.ui.SettingController"
+		   xmlns:fx="http://javafx.com/fxml/1"
+		   xmlns="http://javafx.com/javafx/2.2">
+
+	<GridPane alignment="TOP_LEFT" style="-fx-padding: 4 12 4 12" >
+		<Label text="加班信息(配置平时加班最少几小时,算加班)" style="-fx-font-size: 12;-fx-text-fill:black" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+
+		<Spinner  fx:id="overWorkSpinner" style="-fx-font-size: 20;" editable="false" prefWidth="380" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" left="12" right="12" />
+			</GridPane.margin>
+		</Spinner>
+
+
+		<Label text="色彩配置(配置生成excel异常信息色彩)" style="-fx-font-size: 12;-fx-text-fill:black" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+
+		<Label text="早上迟到" GridPane.rowIndex="3" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="lateColorPicker" prefWidth="160" GridPane.rowIndex="3" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="晚上早退" GridPane.rowIndex="4" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="levelEarlyColorPicker" prefWidth="160" GridPane.rowIndex="4" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="旷工" GridPane.rowIndex="5" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="absenteeismColorPicker" prefWidth="160" GridPane.rowIndex="5" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="早上未打卡" GridPane.rowIndex="6" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="unCheckInColorPicker" prefWidth="160" GridPane.rowIndex="6" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="晚上未打卡" GridPane.rowIndex="7" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="unCheckOutColorPicker" prefWidth="160" GridPane.rowIndex="7" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="平时加班"  GridPane.rowIndex="8" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="workColorPicker" prefWidth="160" GridPane.rowIndex="8" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="周末加班"  GridPane.rowIndex="9" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="weekWorkColorPicker" prefWidth="160" GridPane.rowIndex="9" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+
+		<Label text="假日加班"  GridPane.rowIndex="10" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="holidayWorkColorPicker" prefWidth="160" GridPane.rowIndex="10" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
+	</GridPane>
+	<JFXSnackbar fx:id="snackBar" prefWidth="420" />
+</StackPane>

@@ -28,6 +28,11 @@
 						<MenuItem text="节假信息" onAction="#handleHolidayAction"/>
 					</items>
 				</Menu>
+				<Menu text="设置">
+					<items>
+						<MenuItem text="设置" onAction="#handleSettingAction"/>
+					</items>
+				</Menu>
 				<Menu text="关于">
 					<items>
 						<MenuItem text="关于" onAction="#handleAboutAction"/>

@@ -1,6 +1,7 @@
 package quant.attendance.excel
 
 import com.sun.istack.internal.NotNull
+import javafx.scene.paint.Color
 import jxl.CellView
 import jxl.Workbook
 import jxl.format.Alignment
@@ -17,6 +18,8 @@ import quant.attendance.model.AttendanceType
 import quant.attendance.model.DepartmentRest
 import quant.attendance.model.Employee
 import quant.attendance.model.EmployeeRest
+import quant.attendance.prefs.PrefsKey
+import quant.attendance.prefs.SharedPrefs
 import quant.attendance.util.IOUtils
 import quant.attendance.util.TextUtils
 
@@ -34,6 +37,7 @@ class ExcelWriter {
     private final List<Employee> employeeItems;
     DepartmentRest departmentRest
     LocalDateTime startDateTime, endDateTime;
+    final Map<String,Colour> colorItems=[:]
 
     public ExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems) {
         this.startDateTime=startDateTime;
@@ -51,6 +55,25 @@ class ExcelWriter {
         } else {
             InformantRegistry.getInstance().notifyMessage("员工集为空!");
         }
+
+        //初始化配置颜色
+        addColorItem(PrefsKey.COLOR_LATE,Color.BISQUE)
+        addColorItem(PrefsKey.COLOR_LEVEL_EARLY,Color.AZURE)
+        addColorItem(PrefsKey.COLOR_ABSENTEEISM,Color.RED)
+        addColorItem(PrefsKey.COLOR_UN_CHECK_IN,Color.BLUE)
+        addColorItem(PrefsKey.COLOR_UN_CHECK_OUT,Color.DARKBLUE)
+        addColorItem(PrefsKey.COLOR_OVER_TIME,Color.GREEN)
+        addColorItem(PrefsKey.COLOR_WEEKEND_OVER_TIME,Color.GREENYELLOW)
+        addColorItem(PrefsKey.COLOR_HOLIDAY_OVER_TIME,Color.YELLOW)
+    }
+
+    void addColorItem(key,Color defaultColor){
+        Color color=defaultColor
+        def colorValue=SharedPrefs.get(key)
+        if(colorValue){
+            color=Color.valueOf(colorValue)
+        }
+        colorItems<<[(key):new Colour(Colour.allColours.length,key,(int)Math.round(color.red * 255.0),(int)Math.round(color.green * 255.0),(int)Math.round(color.blue * 255.0))]
     }
 
     public void writeExcel() {
@@ -169,26 +192,29 @@ class ExcelWriter {
                         sheet.addCell(new Label(dayIndex + 1, finalIndex, result.endTime, getCellFormat(Alignment.LEFT)));//正常下班
                     }
                     if (type == (type | AttendanceType.LATE)) {
-                        sheet.addCell(new Label(dayIndex, finalIndex, result.startTime, getCellFormat(Colour.RED, Alignment.LEFT)));//迟到
+                        sheet.addCell(new Label(dayIndex, finalIndex, result.startTime, getCellFormat(colorItems[PrefsKey.COLOR_LATE], Alignment.LEFT)));//迟到
                     }
                     if (type == (type | AttendanceType.LEVEL_EARLY)) {
-                        sheet.addCell(new Label(dayIndex + 1, finalIndex, result.endTime, getCellFormat(Colour.RED, Alignment.LEFT)));//早退
+                        sheet.addCell(new Label(dayIndex + 1, finalIndex, result.endTime, getCellFormat(colorItems[PrefsKey.COLOR_LEVEL_EARLY], Alignment.LEFT)));//早退
                     }
                     if (type == (type | AttendanceType.ABSENTEEISM)) {
-                        sheet.addCell(new Label(dayIndex + 2, finalIndex, "未上班", getCellFormat(Colour.RED, Alignment.LEFT)));//翘班
+                        sheet.addCell(new Label(dayIndex + 2, finalIndex, "未上班", getCellFormat(colorItems[PrefsKey.COLOR_ABSENTEEISM], Alignment.LEFT)));//翘班
                     }
                     if (type == (type | AttendanceType.UN_CHECK_IN)) {
-                        sheet.addCell(new Label(dayIndex, finalIndex, "早上未打卡", getCellFormat(Colour.RED, Alignment.LEFT)));//早上未打卡
+                        sheet.addCell(new Label(dayIndex, finalIndex, "早上未打卡", getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_IN], Alignment.LEFT)));//早上未打卡
                     }
                     if (type == (type | AttendanceType.UN_CHECK_OUT)) {
-                        sheet.addCell(new Label(dayIndex + 1, finalIndex, "晚上未打卡", getCellFormat(Colour.RED, Alignment.LEFT)));//晚上未打卡
+                        sheet.addCell(new Label(dayIndex + 1, finalIndex, "晚上未打卡", getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_OUT], Alignment.LEFT)));//晚上未打卡
                     }
                     int overHour = result.overMinute / 60;
                     if (type == (type | AttendanceType.OVER_TIME)) {
-                        sheet.addCell(new Label(dayIndex + 2, finalIndex, overHour + "H", getCellFormat(Colour.YELLOW)));//平时加班
+                        sheet.addCell(new Label(dayIndex + 2, finalIndex, overHour + "H", getCellFormat(colorItems[PrefsKey.COLOR_OVER_TIME])));//平时加班
                     }
                     if (type == (type | AttendanceType.WEEKEND_OVER_TIME)) {
-                        sheet.addCell(new Label(dayIndex + 2, finalIndex, overHour + "H", getCellFormat(Colour.YELLOW)));//周末加班
+                        sheet.addCell(new Label(dayIndex + 2, finalIndex, overHour + "H", getCellFormat(colorItems[PrefsKey.COLOR_WEEKEND_OVER_TIME])));//周末加班
+                    }
+                    if (0!= (type & AttendanceType.HOLIDAY_OVER_TIME)) {
+                        sheet.addCell(new Label(dayIndex + 2, finalIndex, overHour + "H", getCellFormat(colorItems[PrefsKey.COLOR_HOLIDAY_OVER_TIME])));//周末加班
                     }
                     sheet.setColumnView(dayIndex, getBestNum(result.startTime));
                     sheet.setColumnView(dayIndex + 1, getBestNum(result.endTime));
@@ -222,74 +248,77 @@ class ExcelWriter {
             sheet.addCell(new Label(i, 0, titles[i], wc));
         }
         int index = 0;
-        def remarkItems=[]
-        Colour colour=Colour.RED
         for (Map.Entry<String, HashMap<Integer, AttendanceResult>> entry : results.entrySet()) {
             String name = entry.getKey();
             HashMap<Integer, AttendanceResult> resultItems = entry.getValue();
             for (Map.Entry<Integer, AttendanceResult> resultEntry : resultItems.entrySet()) {
-                remarkItems.clear()
                 Integer today = resultEntry.getKey();
                 AttendanceResult result = resultEntry.getValue();
                 int type = result.type;
-                if (type != (type | AttendanceType.NORMA) ||
-                        type == (type | AttendanceType.OVER_TIME) ||
-                        type == (type | AttendanceType.WEEKEND_OVER_TIME)) {
-                    //上下班不正常,平时加班,周末加班.都记录下名字,待下方添加异常数据
-                    //这里,操作了.直接++,将位置下移
-                    sheet.addCell(new Label(0, ++index, name, getCellFormat()));
-                    sheet.addCell(new Label(1, index, year + "/" + month + "/" + today, getCellFormat()));
-                    EmployeeRest employee = employeeItems.find({it.employeeName==name})
-
-                    sheet.addCell(new Label(2, index, employee?employee.startDate:departmentRest.startDate, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(3, index, employee?employee.endDate:departmentRest.endDate, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(4, index, employee?employee.workDays.join(","):departmentRest.workDays.join(","), getCellFormat()));
-                }
-                if (type == (type | AttendanceType.LATE)) {
-                    remarkItems<<"迟到"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Colour.RED, Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
-                }
-                if (type == (type | AttendanceType.LEVEL_EARLY)) {
-                    remarkItems<<"早退"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Colour.RED, Alignment.LEFT)));
-                }
-                if (type == (type | AttendanceType.ABSENTEEISM)) {
-                    remarkItems<<"翘班"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                }
-                if (type == (type | AttendanceType.UN_CHECK_IN)) {
-                    remarkItems<<"早上未打卡"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Colour.RED, Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
-                }
-                if (type == (type | AttendanceType.UN_CHECK_OUT)) {
-                    remarkItems<<"晚上未打卡"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Colour.RED, Alignment.LEFT)));
-                }
                 int overHour = result.overMinute / 60;
-                if (type == (type | AttendanceType.OVER_TIME)) {
-                    colour=Colour.YELLOW
-                    remarkItems<<"平时(${overHour}H)"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
-                }
-                if (type == (type | AttendanceType.WEEKEND_OVER_TIME)) {
-                    colour=Colour.YELLOW
-                    remarkItems<<"周末(${overHour}H)"
-                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
-                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
-                }
-                if(remarkItems){
-                    sheet.addCell(new Label(8, index, remarkItems.join("/"), getCellFormat(colour)));
+                if (0 != (type & AttendanceType.NORMA)){
+                    for(int attendanceType=AttendanceType.LATE;attendanceType<=AttendanceType.HOLIDAY_OVER_TIME;attendanceType*=2){
+                        if(0!=(type&attendanceType)){
+                            //上下班不正常,平时加班,周末加班.都记录下名字,待下方添加异常数据
+                            //这里,操作了.直接++,将位置下移
+                            sheet.addCell(new Label(0, ++index, name, getCellFormat()));
+                            sheet.addCell(new Label(1, index, year + "/" + month + "/" + today, getCellFormat()));
+                            EmployeeRest employee = employeeItems.find({it.employeeName==name})
+
+                            sheet.addCell(new Label(2, index, employee?employee.startDate:departmentRest.startDate, getCellFormat(Alignment.LEFT)));
+                            sheet.addCell(new Label(3, index, employee?employee.endDate:departmentRest.endDate, getCellFormat(Alignment.LEFT)));
+                            sheet.addCell(new Label(4, index, employee?employee.workDays.join(","):departmentRest.workDays.join(","), getCellFormat()));
+
+                            switch (attendanceType){
+                                case AttendanceType.LATE:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(colorItems[PrefsKey.COLOR_LATE], Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "迟到", getCellFormat(colorItems[PrefsKey.COLOR_LATE])));
+                                    break;
+                                case AttendanceType.LEVEL_EARLY:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(colorItems[PrefsKey.COLOR_LEVEL_EARLY], Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "早退", getCellFormat(colorItems[PrefsKey.COLOR_LEVEL_EARLY])));
+                                    break;
+                                case AttendanceType.ABSENTEEISM:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(colorItems[PrefsKey.COLOR_ABSENTEEISM],Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "翘班", getCellFormat(colorItems[PrefsKey.COLOR_ABSENTEEISM])));
+                                    break;
+                                case AttendanceType.UN_CHECK_IN:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_IN], Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "早上未打卡", getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_IN])));
+                                    break;
+                                case AttendanceType.UN_CHECK_OUT:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_OUT], Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "晚上未打卡", getCellFormat(colorItems[PrefsKey.COLOR_UN_CHECK_OUT])));
+                                    break;
+                                case AttendanceType.OVER_TIME:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "平时(${overHour}H)", getCellFormat(colorItems[PrefsKey.COLOR_OVER_TIME])));
+                                    break;
+                                case AttendanceType.WEEKEND_OVER_TIME:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "周末(${overHour}H)", getCellFormat(colorItems[PrefsKey.COLOR_WEEKEND_OVER_TIME])));
+                                    break;
+                                case AttendanceType.HOLIDAY_OVER_TIME:
+                                    sheet.addCell(new Label(5, index, year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(6, index, result.startTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(7, index, result.endTime, getCellFormat(Alignment.LEFT)));
+                                    sheet.addCell(new Label(8, index, "假日(${overHour}H)", getCellFormat(colorItems[PrefsKey.COLOR_HOLIDAY_OVER_TIME])));
+                                    break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -308,7 +337,7 @@ class ExcelWriter {
 
     @NotNull
     private WritableCellFormat getCellFormat(jxl.format.Alignment gravity) {
-        return getCellFormat(null, gravity);
+        return getCellFormat(Colour.WHITE, gravity);
     }
 
 
@@ -317,7 +346,10 @@ class ExcelWriter {
         WritableCellFormat wc1 = new WritableCellFormat();
         try {
             wc1.setAlignment(gravity);
-            if (null != colour) wc1.setBackground(colour);
+            if (null != colour) {
+                // TODO ERROR   !
+                wc1.setBackground(colour)
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

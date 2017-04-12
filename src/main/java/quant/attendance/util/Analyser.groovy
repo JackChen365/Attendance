@@ -6,9 +6,11 @@ import quant.attendance.model.AttendanceResult
 import quant.attendance.model.AttendanceType
 import quant.attendance.model.DayAttendance
 import quant.attendance.model.DepartmentRest
-import quant.attendance.model.Employee
 import quant.attendance.model.EmployeeRest
 import quant.attendance.model.HolidayItem
+import quant.attendance.prefs.PrefsKey
+import quant.attendance.prefs.SharedPrefs
+import quant.attendance.ui.SettingController
 
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -23,6 +25,7 @@ class Analyser {
     DepartmentRest departmentRest
     LocalDateTime startDateTime,endDateTime
     List<HolidayItem> holidayItems=[]
+    final int minWorkHour
 
     public Analyser(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,DepartmentRest departmentRest, List<EmployeeRest> employeeRests,holidayItems) {
         if (!attendanceItems) {
@@ -33,6 +36,9 @@ class Analyser {
         this.departmentRest=departmentRest
         this.employeeItems.addAll(employeeRests)
         !holidayItems?:this.holidayItems.addAll(holidayItems)
+        //最小加班时长
+        def workHourValue=SharedPrefs.get(PrefsKey.WORK_HOUR)
+        minWorkHour=workHourValue?Integer.valueOf(workHourValue):SettingController.DEFAULT_WORD_HOUR
         //分析出勤日期
         (startDateTime,endDateTime)=analyzerDate()
     }
@@ -145,10 +151,12 @@ class Analyser {
                 //自定义设置休息
                 boolean isWeekend
                 //部门单独设定员工,假日条目
+                boolean isHolidayWork=!findHolidayItem?false:!findHolidayItem.isWork
                 if(employee){
-                    isWeekend=!employee.workDays.contains(dayOfWeek)||!findHolidayItem.isWork
+                    //判断是否为非工作日加班,1:周末2:非假日调休日上班
+                    isWeekend=!employee.workDays.contains(dayOfWeek)||isHolidayWork
                 } else {
-                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)||!findHolidayItem.isWork
+                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)||isHolidayWork
                 }
                 long startEmployeeTime,endEmployeeTime
                 (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
@@ -171,7 +179,11 @@ class Analyser {
                         Attendance startAttendance = dayAttendance.startAttendance;
                         Attendance endAttendance = dayAttendance.endAttendance;
                         //休息日加班,不按正常出勤日期算,只按此人正常上班时间
-                        dayResult.type |= AttendanceType.WEEKEND_OVER_TIME;
+                        if(isHolidayWork){
+                            dayResult.type |= AttendanceType.HOLIDAY_OVER_TIME;
+                        } else {
+                            dayResult.type |= AttendanceType.WEEKEND_OVER_TIME;
+                        }
                         if (null != startAttendance) {
                             dayResult.type |= AttendanceType.TO_WORK;
                             dayResult.startTime = startAttendance.toString();
@@ -240,9 +252,9 @@ class Analyser {
                     //计算加班
                     if (null != startAttendance && null != endAttendance) {
                         int workMinute = (endAttendance.hour * 60 + endAttendance.minute) - (startAttendance.hour * 60 + startAttendance.minute);
-                        //超出1小时,算加班
+                        //超出几小时,算加班
                         dayResult.overMinute = workMinute - (endEmployeeTime-startEmployeeTime)/60/1000;//加班时长(分)
-                        if (dayResult.overMinute >= 2 * 60) {
+                        if (dayResult.overMinute >= minWorkHour * 60) {
                             dayResult.type |= AttendanceType.OVER_TIME;
                         }
                     }

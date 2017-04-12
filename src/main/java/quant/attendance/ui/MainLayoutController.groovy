@@ -231,4 +231,7 @@ class MainLayoutController implements Initializable{
         StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/holiday_layout.fxml"), 640, 720)?.show()
     }
 
+    public void handleSettingAction(ActionEvent actionEvent) {
+        StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/setting_layout.fxml"), 640, 720)?.show()
+    }
 }
