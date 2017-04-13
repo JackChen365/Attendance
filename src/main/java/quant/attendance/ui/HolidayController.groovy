@@ -1,25 +1,18 @@
 package quant.attendance.ui
-
-    import com.jfoenix.controls.JFXButton
-    import com.jfoenix.controls.JFXTreeTableColumn
-    import com.jfoenix.controls.JFXTreeTableView
-    import com.jfoenix.controls.RecursiveTreeItem
-import com.jfoenix.controls.cells.editors.base.JFXTreeTableCell
+import com.jfoenix.controls.JFXButton
+import com.jfoenix.controls.JFXTreeTableColumn
+import com.jfoenix.controls.JFXTreeTableView
+import com.jfoenix.controls.RecursiveTreeItem
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
-    import javafx.fxml.Initializable
+import javafx.fxml.Initializable
 import javafx.stage.FileChooser
-import javafx.stage.Stage
-import org.codehaus.groovy.tools.groovydoc.FileOutputTool
 import quant.attendance.StageManager
 import quant.attendance.model.EmployeeProperty
-    import quant.attendance.model.HolidayItem
-    import quant.attendance.prefs.FilePrefs
-    import quant.attendance.util.FileUtils
-    import quant.attendance.widget.drag.DragTextField
-
-import java.nio.file.Files
-
+import quant.attendance.model.HolidayItem
+import quant.attendance.prefs.FilePrefs
+import quant.attendance.util.FileUtils
+import quant.attendance.widget.drag.DragTextField
 /**
  * Created by cz on 2017/4/11.
  */
