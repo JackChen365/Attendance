@@ -33,12 +33,12 @@ class SettingController implements Initializable{
 
     @Override
     void initialize(URL location, ResourceBundle resources) {
+        def workHour=SharedPrefs.get(PrefsKey.WORK_HOUR)
         overWorkSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,6))
+        overWorkSpinner.valueFactory.setValue(workHour?workHour as Integer:DEFAULT_WORD_HOUR)
         overWorkSpinner.valueProperty().addListener({ observable,oldValue,newValue->
             SharedPrefs.save(PrefsKey.WORK_HOUR,newValue)
         } as ChangeListener<Integer>)
-        def workHour=SharedPrefs.get(PrefsKey.WORK_HOUR)
-        overWorkSpinner.editor.setText(workHour?:String.valueOf(DEFAULT_WORD_HOUR))
         setColorPickerValue(lateColorPicker,PrefsKey.COLOR_LATE,Color.BROWN)
         setColorPickerValue(levelEarlyColorPicker,PrefsKey.COLOR_LEVEL_EARLY,Color.AZURE)
         setColorPickerValue(absenteeismColorPicker,PrefsKey.COLOR_ABSENTEEISM,Color.RED)

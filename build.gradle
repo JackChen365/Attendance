@@ -29,6 +29,7 @@ repositories {
 
 sourceSets {
     main {
+        java.srcDirs = ['jxl']
         groovy { srcDirs = ["src/main/java"] }
         resources.srcDirs = ['src/main/resources']
         output.classesDir   = 'build/main'
@@ -47,10 +48,6 @@ mainClassName="quant.attendance.Main"
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.3'
 }
 
 dependencies {
