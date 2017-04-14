@@ -5,7 +5,6 @@ import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
 import com.jfoenix.controls.JFXTreeTableView
 import com.jfoenix.controls.RecursiveTreeItem
-import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.Event
@@ -19,8 +18,8 @@ import quant.attendance.bus.RxBus
 import quant.attendance.database.DbHelper
 import quant.attendance.event.OnDepartmentAddedEvent
 import quant.attendance.event.OnEmployeeAddedEvent
-import quant.attendance.excel.ExcelReader
-import quant.attendance.excel.ExcelWriter
+import quant.attendance.excel.reader.ExcelReaderA
+import quant.attendance.excel.writer.ExcelWriter
 import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.DepartmentProperty
 import quant.attendance.model.EmployeeProperty
@@ -151,7 +150,7 @@ class MainLayoutController implements Initializable{
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("请选择一个excel文件!",null,2000, null))
         } else {
             Observable.create({ sub ->
-                def attendanceItems=new ExcelReader().attendanceRead(file)
+                def attendanceItems=new ExcelReaderA().attendanceRead(file)
                 def selectDepartment=departmentTable.selectionModel.selectedItem.value.toItem()
                 def selectEmployeeItems=employeeItems.findAll {it.departmentId==selectDepartment.id}
                 //获得日期模板

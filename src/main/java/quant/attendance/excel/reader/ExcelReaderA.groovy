@@ -1,43 +1,26 @@
-package quant.attendance.excel
+package quant.attendance.excel.reader
 
 import jxl.Cell
 import jxl.Sheet
 import jxl.Workbook
 import jxl.read.biff.DateRecord
+import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.Attendance
-import quant.attendance.util.IOUtils
 import quant.attendance.util.TextUtils
 
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
  * Created by Administrator on 2017/4/9.
  */
-class ExcelReader {
+class ExcelReaderA extends AbsExcelReader {
     final int START_YEAR=2000
-    /**
-     * 读取模板的员工出勤信息
-     *
-     * @return
-     */
-    public HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceRead(File file) {
+
+    def readWorkBook(Workbook workbook){
         HashMap<String, HashMap<Integer, ArrayList<Attendance>>> items = new HashMap<>();
-        Workbook rwb = null;
-        InputStream stream = null;
-        try {
-            stream = new FileInputStream(file);
-            rwb = Workbook.getWorkbook(stream);
-        } catch (Exception e) {
-            InformantRegistry.instance.notifyMessage(file.getAbsolutePath() + " 文件未找到!");
-        } finally {
-            IOUtils.closeStream(stream);
-        }
-        InformantRegistry.instance.notifyMessage("开始分析文件:" + file.getName()+"!");
         //获取文件的指定工作表 默认的第一个
         Sheet sheet = rwb.getSheet(0);
         int rows = sheet.getRows();
@@ -119,7 +102,6 @@ class ExcelReader {
                 attendances.add(attendance);
             }
         }
-        InformantRegistry.instance.notifyMessage("分析出勤信息完毕,共计:${items.size()}条")
-        return items;
+        items
     }
 }

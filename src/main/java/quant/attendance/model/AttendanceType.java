@@ -61,4 +61,6 @@ public interface AttendanceType {
      * 正常上班
      */
     int NORMA = TO_WORK | OFF_WORK;
+
+
 }
