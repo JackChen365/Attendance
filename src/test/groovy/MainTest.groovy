@@ -1,4 +1,5 @@
 import groovy.io.FileType
+import quant.attendance.excel.reader.ExcelReaderB
 
 import java.time.LocalDateTime
 import java.util.regex.Pattern
@@ -48,5 +49,11 @@ def testType(){
     println newVar.class
 }
 
+def testReader(){
+    def reader=new ExcelReaderB()
+    def items=reader.attendanceRead(new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\05月考勤汇总表.xls"))
+    println items
+}
+
 //testDate()
-testPattern()
+testReader()
