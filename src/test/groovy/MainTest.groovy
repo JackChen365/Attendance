@@ -1,6 +1,7 @@
 import groovy.io.FileType
 import quant.attendance.excel.reader.ExcelReaderB
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.regex.Pattern
 
@@ -55,5 +56,9 @@ def testReader(){
     println items
 }
 
+def testFunc(){
+    [1,2]
+}
+
 //testDate()
-testReader()
+//testReader()

@@ -161,7 +161,7 @@ class MainLayoutController implements Initializable{
                 } else {
                     def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays)
                     def result=analyser.result()
-                    def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems)
+                    def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays)
                     excelWriter.writeExcel()
                     sub.onNext(true)
                 }

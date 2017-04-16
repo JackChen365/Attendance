@@ -22,7 +22,7 @@ class ExcelReaderA extends AbsExcelReader {
     def readWorkBook(Workbook workbook){
         HashMap<String, HashMap<Integer, ArrayList<Attendance>>> items = new HashMap<>();
         //获取文件的指定工作表 默认的第一个
-        Sheet sheet = rwb.getSheet(0);
+        Sheet sheet = workbook.getSheet(0);
         int rows = sheet.getRows();
         Pattern pattern = Pattern.compile("((\\d{1,2})[/|-](\\d{1,2})[/|-](\\d{1,4})|(\\d{1,4})[/|-](\\d{1,2})[/|-](\\d{1,2}))\\s+(\\d{1,2}):(\\d{1,2})(:\\d{1,2})?");//匹配日期
         //行数(表头的目录不需要，从1开始)

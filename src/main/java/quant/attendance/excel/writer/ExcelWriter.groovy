@@ -12,12 +12,12 @@ import quant.attendance.model.EmployeeRest
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-import static jxl.format.Colour.AUTOMATIC as COLOR_ABSENTEEISM
 
 
 //----------------------------------------------------------
 // thank you groovy static import!
 //----------------------------------------------------------
+import static jxl.format.Colour.AUTOMATIC as COLOR_ABSENTEEISM
 import static jxl.format.Colour.BLUE2 as COLOR_LATE
 import static jxl.format.Colour.DARK_BLUE2 as COLOR_UN_CHECK_IN
 import static jxl.format.Colour.DARK_RED2 as COLOR_UN_CHECK_OUT
@@ -31,15 +31,15 @@ import static jxl.format.Colour.TEAL2 as COLOR_HOLIDAY_OVER_TIME
 class ExcelWriter extends AbsExcelWriter{
     private final int INFO_LENGTH = 4;
 
-    ExcelWriter(LocalDateTime startDateTime, LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results, DepartmentRest departmentRest, Object employeeItems) {
-        super(startDateTime, endDateTime, results, departmentRest, employeeItems)
+    ExcelWriter(LocalDateTime startDateTime, LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results, DepartmentRest departmentRest, Object employeeItems,def holidayItems) {
+        super(startDateTime, endDateTime, results, departmentRest, employeeItems,holidayItems)
     }
 
     @Override
-    void write(WritableWorkbook wwb, LocalDateTime startDateTime, LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results, List<EmployeeRest> employeeItems) throws WriteException {
+    void write(WritableWorkbook wwb, LocalDateTime startDateTime, LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results, List<EmployeeRest> employeeItems,holidayItems) throws WriteException {
         writeSheet1(wwb,startDateTime,endDateTime,results,employeeItems)
         writeSheet2(wwb,startDateTime,endDateTime,results,employeeItems)
-
+        writeSheet3(wwb,startDateTime,endDateTime,results,employeeItems,holidayItems)
     }
 /**
      * 写入汇总数据
@@ -256,7 +256,131 @@ class ExcelWriter extends AbsExcelWriter{
                 }
             }
         }
-        InformantRegistry.getInstance(). notifyMessage("初始化员工考勤其他信息完成!");
+        InformantRegistry.getInstance(). notifyMessage("-------------------初始化员工考勤其他信息完成!-------------------");
+    }
+
+    /**
+     * 写入汇总表
+     * @param wwb
+     * @param startDateTime
+     * @param endDateTime
+     * @param results
+     * @param employeeItems
+     * @param holidayItems 假日信息
+     * @throws WriteException
+     */
+    private void writeSheet3(WritableWorkbook wwb,LocalDateTime startDateTime,LocalDateTime endDateTime,
+                             HashMap<String, HashMap<Integer, AttendanceResult>> results,List<EmployeeRest> employeeItems,holidayItems) throws WriteException{
+//        序号	姓名	正常出勤/天	事假/天	旷工/天	迟到/次	早退/次	平时加班/小时	周末加班/天数	实际出勤/天
+        InformantRegistry.getInstance(). notifyMessage("-------------------开始初始化员工考勤汇总信息--------------------");
+        int year=startDateTime.year
+        int month=startDateTime.monthValue
+        WritableSheet[] sheets = wwb.getSheets();
+        WritableSheet sheet = wwb.createSheet(year + "_" + month + "汇总列表", null == sheets ? 1 : sheets.length + 1);
+        String[] titles = ["序号", "姓名", "正常出勤/天", "旷工/天", "迟到/次", "早退/次", "平时加班/小时", "周末加班/天数", "假日加班/天数", "实际出勤/天"]
+        int index=0
+        for (int i = 0; i < titles.length; i++) {
+            WritableCellFormat wc = getCellFormat();
+            sheet.addCell(new Label(i, 0, titles[i], wc));
+        }
+        //获得当前月份实际工作天数
+        int workDays=getMonthWorkDay(year,month)
+        results.each {
+            int workHour,days
+            sheet.addCell(new Label(0, ++index, index as String, getCellFormat()));//序号
+            sheet.addCell(new Label(1, index, it.key, getCellFormat()));//姓名
+            sheet.addCell(new Label(2, index, workDays as String, getCellFormat()));//正常出勤/天
+            days=getAttendanceTypeDays(it.value,AttendanceType.ABSENTEEISM)
+            sheet.addCell(new Label(3, index, days as String, getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_ABSENTEEISM)));//旷工/天
+            days=getAttendanceTypeDays(it.value,AttendanceType.LATE)
+            sheet.addCell(new Label(4, index,getAttendanceTypeDays(it.value,AttendanceType.LATE) as String, getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_LATE)));//迟到/次
+            days=getAttendanceTypeDays(it.value,AttendanceType.LEVEL_EARLY)
+            sheet.addCell(new Label(5, index, getAttendanceTypeDays(it.value,AttendanceType.LEVEL_EARLY) as String, getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_LEVEL_EARLY)));//早退/次
+
+            (workHour,days)=getAttendanceOverWorkDays(it.value)
+            sheet.addCell(new Label(6, index, 0==days?"#":"${workHour}时/${days}天", getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_OVER_TIME)));//平时加班/小时
+
+            workDays=getAttendanceWeekOverWorkDays(it.value,AttendanceType.HOLIDAY_OVER_TIME)
+            sheet.addCell(new Label(7, index, workDays as String, getCellFormat(0==workDays?jxl.format.Colour.WHITE:COLOR_WEEKEND_OVER_TIME)));//周末加班/天数
+            workDays=getAttendanceWeekOverWorkDays(it.value,AttendanceType.WEEKEND_OVER_TIME)
+            sheet.addCell(new Label(8, index, workDays as String, getCellFormat(0==workDays?jxl.format.Colour.WHITE:COLOR_HOLIDAY_OVER_TIME)));//假日加班/天数
+            sheet.addCell(new Label(9, index, it.value.size() as String, getCellFormat()));//实际出勤/天
+        }
+        InformantRegistry.getInstance(). notifyMessage("-------------------初始化员工考勤汇总信息完成!-------------------");
+    }
+
+    /**
+     * 获得员工指定标记天数
+     * @param items
+     * @return
+     */
+    int getAttendanceTypeDays(items,type){
+        int days=0
+        items.each{ 0==(it.value.type&type)?:days++ }
+        days
+    }
+
+    /**
+     * 平时加班
+     * @param items
+     * @param type
+     * @return
+     */
+    def getAttendanceOverWorkDays(items){
+        int workHour=0,days=0
+        items.each{
+            if(0!=(it.value.type&AttendanceType.OVER_TIME)){
+                days++
+                workHour+=(it.value.overMinute/60)
+            }
+        }
+        [workHour,days]
+    }
+
+    /**
+     * 周末加班
+     * @param items
+     * @param type
+     * @return
+     */
+    int getAttendanceWeekOverWorkDays(items,type){
+        float days=0
+        final int HALF_DAY_HOUR=4
+        final int DAY_HOUR=8
+        items.each{
+            if(0!=(it.value.type&type)){
+                int hour=it.value.overMinute/60
+                if((HALF_DAY_HOUR<=hour&&DAY_HOUR>hour)){
+                    days+=0.5f
+                } else if(DAY_HOUR<=hour){
+                    days+=1f
+                }
+            }
+        }
+        days
+    }
+
+
+    /**
+     * 获得月正常出勤天数
+     * @param year
+     * @param month
+     * @return
+     */
+    private int getMonthWorkDay(year,month){
+        int workDays=0
+        def localDate=LocalDate.of(year,month,1)
+        def endDate=localDate.plusMonths(1)
+        while(localDate!=endDate){
+
+            localDate=localDate.plusDays(1)
+            def item=holidayItems.find{ it.month==localDate.monthValue&&it.day==localDate.dayOfMonth}
+            if(item&&item.isWork||departmentRest.workDays.contains(localDate.dayOfWeek.value)){
+                //受假日影响日期/正常日期
+                workDays++
+            }
+        }
+        workDays
     }
 
     private int getDayIndex(int day) {

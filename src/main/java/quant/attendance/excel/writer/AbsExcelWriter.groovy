@@ -40,11 +40,13 @@ abstract class AbsExcelWriter {
     DepartmentRest departmentRest
     LocalDateTime startDateTime, endDateTime;
     final Map<String,Colour> colorItems=[:]
+    final def holidayItems
 
-    public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems) {
+    public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems,holidayItems) {
         this.startDateTime=startDateTime;
         this.endDateTime=endDateTime;
         this.departmentRest=departmentRest
+        this.holidayItems=holidayItems
         this.results = new HashMap<>();
         if (null != results && !results.isEmpty()) {
             this.results.putAll(results);
@@ -93,7 +95,7 @@ abstract class AbsExcelWriter {
             // http://stackoverflow.com/questions/1834973/making-new-colors-in-jexcelapi
             colorItems.each { wwb.setColourRGB(it.key,it.value.defaultRed,it.value.defaultGreen,it.value.defaultBlue) }
             //记录其他数据
-            write(wwb, startDateTime,endDateTime, results, employeeItems);
+            write(wwb, startDateTime,endDateTime, results, employeeItems,holidayItems);
             //写入所有数据
             wwb.write();
         } catch (FileNotFoundException e) {
@@ -166,5 +168,5 @@ abstract class AbsExcelWriter {
      * @throws WriteException
      */
     abstract void write(WritableWorkbook wwb,LocalDateTime startDateTime,LocalDateTime endDateTime,
-                        HashMap<String, HashMap<Integer, AttendanceResult>> results,List<EmployeeRest> employeeItems) throws WriteException
+                        HashMap<String, HashMap<Integer, AttendanceResult>> results,List<EmployeeRest> employeeItems,holidayItems) throws WriteException
 }
