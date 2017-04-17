@@ -23,7 +23,7 @@ class ExcelReaderB extends AbsExcelReader{
         int rows = sheet.getRows();
         //行数(表头的目录不需要，从1开始)
         //记录表格日期
-        String employeeName = null;
+        String department,employeeName;
         //2017/03/01 ~ 03/31
         Cell[] cells = sheet.getRow(2);
         def dateCell=cells[2]
@@ -34,7 +34,7 @@ class ExcelReaderB extends AbsExcelReader{
             cells = sheet.getRow(i);
             if (null != cells && 0 < cells.length) {
                 if(0==i%2){
-                    employeeName=getCellName(cells)
+                    (department,employeeName)=getCellName(cells)
                     InformantRegistry.instance.notifyMessage("分析员工:$employeeName")
                 } else {
                     for (int k = 0; k < cells.length; k++){
@@ -46,6 +46,7 @@ class ExcelReaderB extends AbsExcelReader{
                         while(matcher.find()){
                             Attendance attendance = new Attendance();
                             attendance.name=employeeName
+                            attendance.department=department
                             int hour = matcher.group(1) as Integer
                             int minute = matcher.group(2)as Integer
                             attendance.year=year
@@ -76,7 +77,7 @@ class ExcelReaderB extends AbsExcelReader{
     }
 
     def getCellName(cellItems){
-        String employeeName = null;
+        String department,employeeName
         for (int k = 0; k < cellItems.length; k++) {
             Cell cell = cellItems[k];
             String contents = cell.getContents();
@@ -86,10 +87,11 @@ class ExcelReaderB extends AbsExcelReader{
                     employeeName = contents
                 } else if(20==k){
                     //部门信息
+                    department=contents
                 }
             }
         }
-        employeeName
+        [department,employeeName]
     }
 
     def getCellDate(content){

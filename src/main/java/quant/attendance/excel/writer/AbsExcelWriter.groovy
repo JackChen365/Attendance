@@ -3,6 +3,7 @@ package quant.attendance.excel.writer
 import javafx.scene.paint.Color
 import jxl.Workbook
 import jxl.format.Colour
+import jxl.format.RGB
 import jxl.write.WritableCellFormat
 import jxl.write.WritableWorkbook
 import jxl.write.WriteException
@@ -19,11 +20,11 @@ import quant.attendance.util.TextUtils
 import java.time.LocalDateTime
 import java.util.regex.Matcher
 
-import static jxl.format.Colour.AUTOMATIC as COLOR_ABSENTEEISM
 
 //----------------------------------------------------------
 // thank you groovy static import!
 //----------------------------------------------------------
+import static jxl.format.Colour.VIOLET2 as COLOR_ABSENTEEISM
 import static jxl.format.Colour.BLUE2 as COLOR_LATE
 import static jxl.format.Colour.DARK_BLUE2 as COLOR_UN_CHECK_IN
 import static jxl.format.Colour.DARK_RED2 as COLOR_UN_CHECK_OUT
@@ -39,7 +40,7 @@ abstract class AbsExcelWriter {
     private final List<Employee> employeeItems;
     DepartmentRest departmentRest
     LocalDateTime startDateTime, endDateTime;
-    final Map<String,Colour> colorItems=[:]
+    final Map<String,RGB> colorItems=[:]
     final def holidayItems
 
     public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems,holidayItems) {
@@ -77,7 +78,7 @@ abstract class AbsExcelWriter {
         if(colorValue){
             color=Color.valueOf(colorValue)
         }
-        colorItems<<[(colour):new Colour(Colour.allColours.length,key,(int)Math.round(color.red * 255.0),(int)Math.round(color.green * 255.0),(int)Math.round(color.blue * 255.0))]
+        colorItems<<[(colour):new RGB((int) Math.round(color.red * 255.0), (int)Math.round(color.green * 255.0), (int)Math.round(color.blue * 255.0))]
     }
 
     public void writeExcel() {
@@ -93,7 +94,7 @@ abstract class AbsExcelWriter {
             wwb = Workbook.createWorkbook(os);
             // 更改标准调色板颜色
             // http://stackoverflow.com/questions/1834973/making-new-colors-in-jexcelapi
-            colorItems.each { wwb.setColourRGB(it.key,it.value.defaultRed,it.value.defaultGreen,it.value.defaultBlue) }
+            colorItems.each { wwb.setColourRGB(it.key,it.value.red,it.value.green,it.value.blue) }
             //记录其他数据
             write(wwb, startDateTime,endDateTime, results, employeeItems,holidayItems);
             //写入所有数据
@@ -142,7 +143,7 @@ abstract class AbsExcelWriter {
             sum = getChineseNum(content);
             sum += content.replaceAll("[\u4e00-\u9fa5]", "").length();
         }
-        sum
+        (int)sum*1.4f
     }
 
     int getChineseNum(String context) {

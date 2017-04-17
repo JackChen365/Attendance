@@ -7,6 +7,7 @@ package quant.attendance.model;
 public class AttendanceResult {
     public final String name;//姓名
     public final int day;//天
+    public String department;//部门
     public String startTime;//开始时间
     public String endTime;//结束时间
     public boolean isWeekend;//周末

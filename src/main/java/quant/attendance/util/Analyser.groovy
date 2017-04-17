@@ -254,13 +254,14 @@ class Analyser {
                         int workMinute = (endAttendance.hour * 60 + endAttendance.minute) - (startAttendance.hour * 60 + startAttendance.minute);
                         //超出几小时,算加班
                         dayResult.overMinute = workMinute - (endEmployeeTime-startEmployeeTime)/60/1000;//加班时长(分)
-                        if (dayResult.overMinute >= minWorkHour * 60) {
+                        if (0<dayResult.overMinute&&dayResult.overMinute >= minWorkHour * 60) {
                             dayResult.type |= AttendanceType.OVER_TIME;
                         }
                     }
                 } else {
                     dayResult.type |= AttendanceType.ABSENTEEISM;//缺勤
                 }
+
             }
             newDateTime=newDateTime.plusDays(1)
         }
