@@ -81,16 +81,15 @@ abstract class AbsExcelWriter {
         colorItems<<[(colour):new RGB((int) Math.round(color.red * 255.0), (int)Math.round(color.green * 255.0), (int)Math.round(color.blue * 255.0))]
     }
 
-    public void writeExcel() {
-        String path = ExcelWriter.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        File parentFile = new File(path).getParentFile();
-        File filePath = new File(parentFile, "考勤.xls");
-        InformantRegistry.getInstance().notifyMessage("目录:" + filePath + " 生成文件!");
+    public def writeExcel() {
+        File target = new File(new File(System.properties["user.home"],"Desktop"), "${departmentRest.departmentName}_${startDateTime.monthValue}月考勤.xls");
+        !target.exists()?:target.delete()
+        InformantRegistry.getInstance().notifyMessage("目录:" + target + " 生成文件!");
         // 创建Excel工作薄
         WritableWorkbook wwb = null;
         OutputStream os = null;
         try {
-            os = new FileOutputStream(filePath);
+            os = new FileOutputStream(target);
             wwb = Workbook.createWorkbook(os);
             // 更改标准调色板颜色
             // http://stackoverflow.com/questions/1834973/making-new-colors-in-jexcelapi
@@ -113,6 +112,7 @@ abstract class AbsExcelWriter {
             }
             IOUtils.closeStream(os);
         }
+        target
     }
 
     WritableCellFormat getCellFormat() {

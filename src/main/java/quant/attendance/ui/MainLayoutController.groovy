@@ -1,5 +1,6 @@
 package quant.attendance.ui
 
+import com.google.common.io.Files
 import com.jfoenix.controls.JFXButton
 import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
@@ -52,7 +53,7 @@ class MainLayoutController implements Initializable{
     @FXML JFXTreeTableColumn employeeStartTime
     @FXML JFXTreeTableColumn employeeEndTime
 
-    @FXML JFXButton createButton
+    @FXML JFXButton saveButton
     @FXML JFXButton exitButton
 
     @FXML JFXSnackbar snackBar
@@ -72,6 +73,7 @@ class MainLayoutController implements Initializable{
         exitButton.setOnMouseClicked({StageManager.instance.getStage(this)?.close()})
         setButtonMouseClicked(fileChoose1,stage,{processAttendanceFile(it)})
     }
+
 
     void initTableItems() {
         Observable.create({ sub ->
@@ -162,15 +164,30 @@ class MainLayoutController implements Initializable{
                     def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays)
                     def result=analyser.result()
                     def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays)
-                    excelWriter.writeExcel()
-                    sub.onNext(true)
+                    sub.onNext(excelWriter.writeExcel())
                 }
                 sub.onCompleted()
             }).subscribeOn(Schedulers.io()).
                     observeOn(MainThreadSchedulers.mainThread()).
-                    subscribe({
-
+                    subscribe({ target->
+                        saveButton.setDisable(false)
+                        final def stage=StageManager.instance.getStage(this)
+                        saveButton.setOnMouseClicked({saveExcelFile(stage,target)})
                     }, { e -> e.printStackTrace() })
+        }
+    }
+
+    /**
+     * 文件另类为
+     * @param stage
+     * @return
+     */
+    def saveExcelFile(stage,target) {
+        FileChooser fileChooser1 = new FileChooser();
+        fileChooser1.setTitle("保存考勤文件");
+        File file = fileChooser1.showSaveDialog(stage);
+        if (file.absolutePath!=target.absolutePath) {
+            Files.copy(target,file)
         }
     }
 

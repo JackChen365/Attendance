@@ -4,6 +4,7 @@ import com.sun.javafx.application.PlatformImpl;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import quant.attendance.exception.ExceptionHandler;
 import quant.attendance.prefs.FilePrefs;
 import quant.attendance.prefs.PrefsKey;
 import quant.attendance.prefs.SharedPrefs;
@@ -18,16 +19,16 @@ import quant.attendance.util.FileUtils;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
         //检测用户是否可以登录
         StageManager stageManager = StageManager.getInstance();
         boolean init = SharedPrefs.getBoolean(PrefsKey.INIT);
+        primaryStage.setTitle("Hello!");
         if(!init){
             //初始化配置
-            primaryStage.setTitle("Hello!");
             stageManager.stage(primaryStage,init,getClass().getClassLoader().getResource("fxml/add_department.fxml"), 640, 720);
         } else {
             //主界面
-            primaryStage.setTitle("考勤数据分析");
             stageManager.stage(primaryStage, getClass().getClassLoader().getResource("fxml/main_layout.fxml"), 960, 720);
         }
         //拷贝节日资料

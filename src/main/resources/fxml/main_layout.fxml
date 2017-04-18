@@ -100,7 +100,7 @@
 					</StyleClassedTextArea>
 
 					<HBox alignment="BOTTOM_RIGHT"  GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" style="-fx-padding: 12 12 12 12">
-						<JFXButton fx:id="createButton" text="生成" styleClass="custom-jfx-button-raised">
+						<JFXButton fx:id="saveButton" text="另存为" disable="true" styleClass="custom-jfx-button-raised">
 							<HBox.margin>
 								<Insets left="12" right="12" />
 							</HBox.margin>
