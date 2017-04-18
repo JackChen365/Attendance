@@ -104,6 +104,9 @@ class AddEmployeeController implements Initializable {
                 item.endTimeMillis=endTimeSpinner.timeMillis
                 DbHelper.helper.insertEmployeeRest(item)
                 employeeItems<<item
+
+                ensureWorkTime=false
+                ensureWorkDay=false
                 employeeField.setText(null)
                 snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("添加员工信息成功!",null,2000, null))
                 //更新表格数据
@@ -151,18 +154,23 @@ class AddEmployeeController implements Initializable {
         } else {
             if(MIN_WORK_TIME_MILLIS<endTimeMillis-startTimeMillis){
                 ensureWorkTime=true
-            } else {
+            } else if(!ensureWorkTime){
                 dialogTitle.setText("温馨提示")
-                dialogContent.setText("工作时数太短,请确认!")
-                dialogAcceptButton.setOnMouseClicked({ensureWorkTime=true})
+                dialogContent.setText("工作时数太短,请确认,若必须添加,请重新添加即可!")
+                dialogAcceptButton.setOnMouseClicked({
+                    ensureWorkTime=true
+                    dialog.close()
+                })
                 dialog.show(root)
-            }
-            if(DEFAULT_WORK_DAY<=workDayItems.size()){
+            } else if(DEFAULT_WORK_DAY<=workDayItems.size()){
                 ensureWorkDay=true
-            } else {
+            } else if(!ensureWorkDay){
                 dialogTitle.setText("温馨提示")
-                dialogContent.setText("工作天数小于法定天数,请确认!")
-                dialogAcceptButton.setOnMouseClicked({ensureWorkDay=true})
+                dialogContent.setText("工作天数小于法定天数,请确认,若必须添加,请重新添加即可!")
+                dialogAcceptButton.setOnMouseClicked({
+                    ensureWorkDay=true
+                    dialog.close()
+                })
                 dialog.show(root)
             }
             result=ensureWorkTime&&ensureWorkDay

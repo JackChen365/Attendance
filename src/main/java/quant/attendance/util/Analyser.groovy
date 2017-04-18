@@ -160,6 +160,9 @@ class Analyser {
                 }
                 long startEmployeeTime,endEmployeeTime
                 (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
+                if("王勇"==name){
+                    println ""
+                }
                 //分析休息时间,判定当天是否为休息时间,休息则定为加班
                 DayAttendance dayAttendance = items.get(dayOfMonth);
                 final AttendanceResult dayResult = new AttendanceResult(name, dayOfMonth);
