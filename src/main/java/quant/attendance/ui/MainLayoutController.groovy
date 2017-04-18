@@ -6,6 +6,7 @@ import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
 import com.jfoenix.controls.JFXTreeTableView
 import com.jfoenix.controls.RecursiveTreeItem
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.Event
@@ -70,7 +71,7 @@ class MainLayoutController implements Initializable{
         initTableItems()
         initEvent()
         attendanceFile.setDragListener{ processAttendanceFile(it)}
-        exitButton.setOnMouseClicked({StageManager.instance.getStage(this)?.close()})
+        exitButton.setOnMouseClicked({Platform.exit()})
         setButtonMouseClicked(fileChoose1,stage,{processAttendanceFile(it)})
     }
 
@@ -182,12 +183,13 @@ class MainLayoutController implements Initializable{
      * @param stage
      * @return
      */
-    def saveExcelFile(stage,target) {
-        FileChooser fileChooser1 = new FileChooser();
-        fileChooser1.setTitle("保存考勤文件");
-        File file = fileChooser1.showSaveDialog(stage);
+    def saveExcelFile(stage,File target) {
+        FileChooser fileChooser = new FileChooser()
+        fileChooser.setTitle("保存考勤文件")
+        File file = fileChooser.showSaveDialog(stage)
         if (file.absolutePath!=target.absolutePath) {
             Files.copy(target,file)
+            !target.exists()?:target.delete()
         }
     }
 
