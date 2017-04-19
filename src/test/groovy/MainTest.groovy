@@ -59,9 +59,15 @@ def testReader(){
 }
 
 def testFunc(){
-    def entryDateTime1=LocalDateTime.of(LocalDate.of(2017,4,17),LocalTime.of(0,0))
-    def entryDateTime2=LocalDateTime.of(LocalDate.of(2017,4,18),LocalTime.of(0,0))
-    println entryDateTime1.compareTo(entryDateTime2)
+    def localDate=LocalDate.of(2017,3,1)
+    println localDate.lengthOfYear()
+
+    [1,2,3,4].each {
+        if(2==it){
+            return
+        }
+        println it
+    }
 }
 
 testFunc()

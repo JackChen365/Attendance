@@ -221,7 +221,7 @@ class ExcelWriter extends AbsExcelWriter{
                                 sheet.addCell(new Label(5, index, workDate=year + "/" + month + "/" + today, getCellFormat(COLOR_ABSENTEEISM,Alignment.LEFT)));
                                 sheet.addCell(new Label(6, index, workStartDate="#", getCellFormat(COLOR_UN_CHECK_IN, Alignment.LEFT)));
                                 sheet.addCell(new Label(7, index, workEndDate="#", getCellFormat(Alignment.LEFT)));
-                                sheet.addCell(new Label(8, index, remark="翘班", getCellFormat(COLOR_ABSENTEEISM)));
+                                sheet.addCell(new Label(8, index, remark="未上班", getCellFormat(COLOR_ABSENTEEISM)));
                                 break;
                             case AttendanceType.UN_CHECK_IN:
                                 sheet.addCell(new Label(5, index, workDate=year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
@@ -282,7 +282,7 @@ class ExcelWriter extends AbsExcelWriter{
         int month=startDateTime.monthValue
         WritableSheet[] sheets = wwb.getSheets();
         WritableSheet sheet = wwb.createSheet(year + "_" + month + "汇总列表", null == sheets ? 1 : sheets.length + 1);
-        String[] titles = ["序 号", "姓名", "正常出勤/天","入职时间","上班时间","下班时间","工作时间", "旷工/天", "迟到/次", "早退/次","早上未打卡","晚上未打卡", "平时加班/小时", "周末加班/天数", "假日加班/天数", "实际出勤/天","备注"]
+        String[] titles = ["序 号", "姓名", "正常出勤/天","入职时间","上班时间","下班时间","工作时间", "未上班", "迟到/次", "早退/次","早上未打卡","晚上未打卡", "平时加班/小时", "周末加班/天数", "假日加班/天数", "实际出勤/天","备注"]
         int index=0
         for (int i = 0; i < titles.length; i++) {
             WritableCellFormat wc = getCellFormat();
@@ -333,11 +333,16 @@ class ExcelWriter extends AbsExcelWriter{
             sheet.addCell(new Label(14, index, holidayOverTime, getCellFormat(0==holidayOverTime?jxl.format.Colour.WHITE:COLOR_HOLIDAY_OVER_TIME)));//假日加班/天数
 
             sheet.addCell(new Label(15, index, getAttendanceWorkDays(it.value) as String, getCellFormat()));//实际出勤/天
-            sheet.addCell(new Label(16, index, getAttendanceRemark(it.value) as String, getCellFormat()));//分析员工信息
+            if(it.key=="韩海涛"){
+                println ""
+            }
+            def attendanceRemark
+//            sheet.addCell(new Label(16, index, attendanceRemark=getAttendanceRemark(it.value) as String, getCellFormat()));//分析员工信息
+            sheet.addCell(new Label(16, index, attendanceRemark="#" as String, getCellFormat()));//分析员工信息
             InformantRegistry.getInstance(). notifyMessage("员工:$it.key 考勤分类信息汇总完毕!");
             //检测最长字符
             int itemIndex=0
-            [index,it.key,workDays,entryTime,startDate,endDate,workDaysValue,absenteeismDays,lateDays,levelEarlyDays,unCheckInDays,unCheckOutDays,overTime,weekendOverTime,holidayOverTime,it.value.size()].each { checkMaxValue(maxValueItems,itemIndex++,it as String) }
+            [index,it.key,workDays,entryTime,startDate,endDate,workDaysValue,absenteeismDays,lateDays,levelEarlyDays,unCheckInDays,unCheckOutDays,overTime,weekendOverTime,holidayOverTime,it.value.size(),attendanceRemark].each { checkMaxValue(maxValueItems,itemIndex++,it as String) }
         }
         maxValueItems.each { sheet.setColumnView(it.key as Integer, getBestNum(it.value)); }
         InformantRegistry.getInstance(). notifyMessage("初始化员工考勤汇总信息完成!");
@@ -420,7 +425,6 @@ class ExcelWriter extends AbsExcelWriter{
         def localDate=LocalDate.of(year,month,1)
         def endDate=localDate.plusMonths(1)
         while(localDate!=endDate){
-
             localDate=localDate.plusDays(1)
             def item=holidayItems.find{ it.month==localDate.monthValue&&it.day==localDate.dayOfMonth}
             if(item&&item.isWork||departmentRest.workDays.contains(localDate.dayOfWeek.value)){
@@ -432,8 +436,77 @@ class ExcelWriter extends AbsExcelWriter{
     }
 
     def getAttendanceRemark(items){
-        ""
+        def out=new StringBuilder()
+        int startDayCount,endDayCount,weekDayCount
+        (startDayCount,endDayCount,weekDayCount)=getAttendanceDay(items)
+        if(0!=startDayCount){
+            out.append("月初未上班:${startDayCount}天")
+        }
+        if(0!=endDayCount){
+            out.append("月末未上班:${endDayCount}天")
+        }
+        if(0!=weekDayCount){
+            out.append("月中未上班:${weekDayCount}天")
+        }
     }
+
+    def getAttendanceDay(items){
+        int startDayCount=0,endDayCount=0,weekDayCount=0
+        if(items){
+            //分析员工月初未上班天数,月末未上班天数,以及中间未上班天数.
+            def startItem,endItem
+            //正向遍历
+            [].collect {
+
+            }
+            items.find{
+                if(!startItem){
+                    if(0==(it.value.type&AttendanceType.ABSENTEEISM)){
+                        startDayCount++
+                    } else {
+                        startItem=it
+                    }
+                }
+            }
+            //反向遍历
+            items.reverseEach {
+                if(!endItem){
+                    if(0==(it.value.type&AttendanceType.ABSENTEEISM)){
+                        endDayCount++
+                    } else {
+                        endItem=it
+                    }
+                }
+            }
+            //遍历中间未上班天数
+            def startWork
+            for(def entry:items){
+                if(entry==startItem){
+                    //开始统计
+                    startWork=entry
+                } else if(entry==endItem) {
+                    break
+                }
+                if(startWork&&0==(entry.value.type&AttendanceType.ABSENTEEISM)){
+                    weekDayCount++
+                }
+            }
+        }
+        [startDayCount,endDayCount,weekDayCount]
+    }
+
+
+    def getWorkDayCount(workDays,year,month,startDay){
+        int workDayCount=0
+        def localDate=LocalDate.of(year,month,startDay)
+        final def holidayItem=holidayItems.find {it.month==month&&it.day==localDate.dayOfMonth}
+        if(workDays.contains(localDate.dayOfWeek)||holidayItem&&holidayItem.isWork){
+            workDayCount++
+        }
+        localDate=localDate.plusDays(1)
+        workDayCount
+    }
+
 
     private int getDayIndex(int day) {
         return (day - INFO_LENGTH) * 3 + INFO_LENGTH;

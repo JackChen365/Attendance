@@ -143,7 +143,7 @@ abstract class AbsExcelWriter {
             sum = getChineseNum(content);
             sum += content.replaceAll("[\u4e00-\u9fa5]", "").length();
         }
-        (int)sum*1.4f
+        (int)sum*1.2f
     }
 
     int getChineseNum(String context) {

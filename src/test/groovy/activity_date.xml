@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:auto="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:padding="12dp"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Date"
+        android:layout_marginBottom="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <quant.layoutmanager.wheel.WheelView
+            android:id="@+id/wheel_view1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            auto:wv_divideDrawable="@color/colorAccent"
+            android:background="@color/colorPrimary"
+            android:layout_marginRight="4dp"
+            auto:wv_drawableSize="1dp"
+            auto:wv_wheelCount="3"
+            auto:wv_minScrollOffset="0.8"/>
+
+        <quant.layoutmanager.wheel.WheelView
+            android:id="@+id/wheel_view2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            auto:wv_divideDrawable="@color/colorAccent"
+            android:background="@color/colorPrimary"
+            android:layout_marginRight="4dp"
+            auto:wv_drawableSize="1dp"
+            auto:wv_wheelCount="3"
+            auto:wv_minScrollOffset="0.8"/>
+
+        <quant.layoutmanager.wheel.WheelView
+            android:id="@+id/wheel_view3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            auto:wv_divideDrawable="@color/colorAccent"
+            android:background="@color/colorPrimary"
+            auto:wv_drawableSize="1dp"
+            auto:wv_wheelCount="3"
+            auto:wv_minScrollOffset="0.8"/>
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_year"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Year"
+        android:layout_marginBottom="4dp"/>
+
+    <android.support.v7.widget.AppCompatSeekBar
+        android:id="@+id/seek_year"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="4dp"
+        android:max="10"/>
+
+    <TextView
+        android:id="@+id/tv_month"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Month"
+        android:layout_marginBottom="4dp" />
+
+    <android.support.v7.widget.AppCompatSeekBar
+        android:id="@+id/seek_month"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="4dp"
+        android:max="12"/>
+
+    <TextView
+        android:id="@+id/tv_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Day"
+        android:layout_marginBottom="4dp"/>
+
+
+    <android.support.v7.widget.AppCompatSeekBar
+        android:id="@+id/seek_day"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="4dp"
+        android:max="30"/>
+
+    <Button
+        android:id="@+id/btn_scroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="Scroll"/>
+</LinearLayout>
