@@ -32,11 +32,15 @@ import quant.attendance.model.EmployeeProperty
 import quant.attendance.model.EmployeeRest
 import quant.attendance.scheduler.MainThreadSchedulers
 import quant.attendance.widget.TimeSpinner
+import quant.attendance.widget.datepicker.MyDatePicker
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
 
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 
 /**
  * Created by Administrator on 2017/4/8.
@@ -56,6 +60,7 @@ class AddEmployeeController implements Initializable {
     @FXML JFXTreeTableColumn employeeName
     @FXML JFXTreeTableColumn startTime
     @FXML JFXTreeTableColumn endTime
+    @FXML MyDatePicker entryDatePicker
 
     @FXML HBox weekContainer
     @FXML JFXButton addButton
@@ -68,8 +73,7 @@ class AddEmployeeController implements Initializable {
     @FXML JFXButton dialogCancelButton
     final def employeeProperties = FXCollections.observableArrayList()
     final List<EmployeeRest> employeeItems=[]
-    boolean ensureWorkTime, ensureWorkDay
-
+    boolean ensureWorkTime, ensureWorkDay,ensureEntryDate
 
 
     @Override
@@ -79,6 +83,10 @@ class AddEmployeeController implements Initializable {
         startTimeSpinner.valueFactory.setValue(LocalTime.of(9, 0))
         endTimeSpinner.valueFactory.setValue(LocalTime.of(18, 0))
 
+        def nowDate=LocalDate.now()
+        entryDatePicker.setValue(LocalDate.of(nowDate.year,nowDate.monthValue,1))
+        entryDatePicker.setOnAction({ ensureEntryDate=true })
+
         dialog.setTransitionType(JFXDialog.DialogTransition.CENTER);
         dialogCancelButton.setOnMouseClicked({dialog.close()})
         initEvent()
@@ -87,6 +95,10 @@ class AddEmployeeController implements Initializable {
     private initEvent() {
         comboBox.valueProperty().addListener({ observable, oldValue, newValue ->
             employeeField.setText(null)
+            def startLocalTime=comboBox.selectionModel.selectedItem.startLocalTime()
+            def endLocalTime=comboBox.selectionModel.selectedItem.endLocalTime()
+            startTimeSpinner.valueFactory.setValue(startLocalTime)
+            endTimeSpinner.valueFactory.setValue(endLocalTime)
             employeeTable.setPredicate({ property -> property.value.departmentId.get()==newValue.id})
         } as ChangeListener<DepartmentRest>)
         addButton.setOnMouseClicked({
@@ -102,6 +114,9 @@ class AddEmployeeController implements Initializable {
                 item.startTimeMillis=startTimeSpinner.timeMillis
                 item.endDate=endTimeSpinner.text
                 item.endTimeMillis=endTimeSpinner.timeMillis
+
+                def entryDateTime=LocalDateTime.of(entryDatePicker.value,LocalTime.of(0,0))
+                item.entryTimeMillis=entryDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 DbHelper.helper.insertEmployeeRest(item)
                 employeeItems<<item
 
@@ -151,10 +166,12 @@ class AddEmployeeController implements Initializable {
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("工作起始时间不能小于结束时间!",null,2000, null))
         } else if(employeeItems.find {it.departmentId==selectItem.id&&it.employeeName==employeeField.text}){
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("该部门己存在员工,如重名,请区分填写!",null,2000, null))
+        } else if(!ensureEntryDate) {
+            snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("请确认员工入职时间,以此避免部分员工统计时出现大量差异!",null,2000, null))
         } else {
-            if(MIN_WORK_TIME_MILLIS<endTimeMillis-startTimeMillis){
-                ensureWorkTime=true
-            } else if(!ensureWorkTime){
+            if(MIN_WORK_TIME_MILLIS<endTimeMillis-startTimeMillis){ensureWorkTime=true}
+            if(DEFAULT_WORK_DAY<=workDayItems.size()){ ensureWorkDay=true }
+            if(!ensureWorkTime){
                 dialogTitle.setText("温馨提示")
                 dialogContent.setText("工作时数太短,请确认,若必须添加,请重新添加即可!")
                 dialogAcceptButton.setOnMouseClicked({
@@ -162,8 +179,6 @@ class AddEmployeeController implements Initializable {
                     dialog.close()
                 })
                 dialog.show(root)
-            } else if(DEFAULT_WORK_DAY<=workDayItems.size()){
-                ensureWorkDay=true
             } else if(!ensureWorkDay){
                 dialogTitle.setText("温馨提示")
                 dialogContent.setText("工作天数小于法定天数,请确认,若必须添加,请重新添加即可!")

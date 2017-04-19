@@ -9,6 +9,7 @@
 <?import quant.attendance.widget.TimeSpinner?>
 <?import de.jensd.fx.fontawesome.Icon?>
 <?import javafx.scene.control.ComboBox?>
+<?import quant.attendance.widget.datepicker.MyDatePicker?>
 <StackPane fx:id="root"
 		   fx:controller="quant.attendance.ui.AddEmployeeController"
 		   xmlns:fx="http://javafx.com/fxml/1"
@@ -98,10 +99,17 @@
 
 			<TimeSpinner fx:id="endTimeSpinner" GridPane.rowIndex="6" GridPane.columnIndex="1" />
 
+			<Label styleClass="title-label" text="入职时间" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
 
-			<Label styleClass="title-label" text="己添加员工" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+			<MyDatePicker fx:id="entryDatePicker" prefWidth="420" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2" >
+				<GridPane.margin>
+					<Insets left="12" right="12" />
+				</GridPane.margin>
+			</MyDatePicker>
 
-			<JFXTreeTableView fx:id="employeeTable" editable="true" onMouseClicked="#handleDepartmentClick" prefWidth="420"  minWidth="100" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" >
+			<Label styleClass="title-label" text="己添加员工" style="-fx-font-size: 13px; -fx-padding: 12 12 12 0 " GridPane.rowIndex="9" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+			<JFXTreeTableView fx:id="employeeTable" editable="true" onMouseClicked="#handleDepartmentClick" prefWidth="420"  minWidth="100" GridPane.rowIndex="10" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" >
 				<GridPane.margin>
 					<Insets left="12" right="12" />
 				</GridPane.margin>

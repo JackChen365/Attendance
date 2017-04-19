@@ -51,6 +51,7 @@ class MainLayoutController implements Initializable{
     @FXML JFXTreeTableView employeeTable
     @FXML JFXTreeTableColumn departmentEmployeeName
     @FXML JFXTreeTableColumn employeeName
+    @FXML JFXTreeTableColumn employeeEntryName
     @FXML JFXTreeTableColumn employeeStartTime
     @FXML JFXTreeTableColumn employeeEndTime
 
@@ -107,6 +108,7 @@ class MainLayoutController implements Initializable{
     private void initEmployeePropertyTable(items) {
         departmentEmployeeName.setCellValueFactory({ departmentEmployeeName.validateValue(it) ? it.value.value.departmentName : departmentEmployeeName.getComputedValue(it) })
         employeeName.setCellValueFactory({ employeeName.validateValue(it) ? it.value.value.employeeName : employeeName.getComputedValue(it) })
+        employeeEntryName.setCellValueFactory({ employeeEntryName.validateValue(it) ? it.value.value.entryTime : employeeEntryName.getComputedValue(it) })
         employeeStartTime.setCellValueFactory({ employeeStartTime.validateValue(it) ? it.value.value.startDate : employeeStartTime.getComputedValue(it) })
         employeeEndTime.setCellValueFactory({ employeeEndTime.validateValue(it) ? it.value.value.endDate : employeeEndTime.getComputedValue(it) })
         !items?:items.each{ employeeProperties.add(it.toProperty()) }

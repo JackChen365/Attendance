@@ -6,6 +6,9 @@ import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 
+import java.time.LocalDateTime
+import java.time.ZoneId
+
 /**
  * Created by Administrator on 2017/4/8.
  */
@@ -19,6 +22,7 @@ class EmployeeRest {
     long startTimeMillis
     String endDate
     long endTimeMillis
+    long entryTimeMillis
 
     EmployeeRest() {
         workDays=[]
@@ -35,7 +39,14 @@ class EmployeeRest {
         property.startTimeMillis=new SimpleLongProperty(startTimeMillis)
         property.endDate=new SimpleStringProperty(endDate)
         property.endTimeMillis=new SimpleLongProperty(endTimeMillis)
+        property.entryTimeMillis=new SimpleLongProperty(entryTimeMillis)
+        def entryDate=entryDateTime().toLocalDate()
+        property.entryTime=new SimpleStringProperty(entryDate.toString())
         property
+    }
+
+    def entryDateTime(){
+        LocalDateTime.ofInstant(new Date(entryTimeMillis).toInstant(),ZoneId.systemDefault())
     }
 
     def workDayToString(){

@@ -48,9 +48,9 @@
 				</HBox.margin>
 				<columns>
 					<JFXTreeTableColumn fx:id="departmentName"
-										text="部门" minWidth="0" prefWidth="74" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+										text="部门" minWidth="0" prefWidth="74" style="-fx-alignment: center; -fx-padding: 0 12 0 12"/>
 					<JFXTreeTableColumn fx:id="startTime"
-										text="开始时间" minWidth="0" prefWidth="100" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+										text="开始时间" minWidth="0" prefWidth="100" style="-fx-alignment: center; -fx-padding: 0 12 0 12"/>
 					<JFXTreeTableColumn fx:id="endTime"
 										text="结束时间" minWidth="0" prefWidth="100" resizable="false" style="-fx-alignment: center"/>
 				</columns>
@@ -81,13 +81,15 @@
 						</GridPane.margin>
 						<columns>
 							<JFXTreeTableColumn fx:id="departmentEmployeeName"
-												text="部门" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+												text="部门" minWidth="0" prefWidth="120" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
 							<JFXTreeTableColumn fx:id="employeeName"
-												text="员工" minWidth="0" prefWidth="120" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+												text="员工" minWidth="0" prefWidth="120" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="employeeEntryName"
+												text="入职时间" minWidth="0" prefWidth="120" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
 							<JFXTreeTableColumn fx:id="employeeStartTime"
-												text="开始时间" minWidth="0" prefWidth="160" style="-fx-alignment: center-left; -fx-padding: 0 12 0 12"/>
+												text="开始时间" minWidth="0" prefWidth="120" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
 							<JFXTreeTableColumn fx:id="employeeEndTime"
-												text="结束时间" minWidth="0" prefWidth="160" resizable="false" style="-fx-alignment: center"/>
+												text="结束时间" minWidth="0" prefWidth="120" resizable="false" style="-fx-alignment: center;-fx-text-alignment: center;"/>
 						</columns>
 					</JFXTreeTableView>
 

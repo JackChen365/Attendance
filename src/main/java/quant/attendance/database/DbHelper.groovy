@@ -93,7 +93,8 @@ class DbHelper implements DbInterface{
                 "start_date," +
                 "start_ms," +
                 "end_date," +
-                "end_ms) VALUES(?,?,?,?,?,?,?,?)")
+                "end_ms," +
+                "entry_time) VALUES(?,?,?,?,?,?,?,?,?)")
         statement.setString(1,item.employeeName)
         statement.setString(2,item.workDayToString())
         statement.setInt(3,item.departmentId)
@@ -102,6 +103,7 @@ class DbHelper implements DbInterface{
         statement.setLong(6,item.startTimeMillis)
         statement.setString(7,item.endDate)
         statement.setLong(8,item.endTimeMillis)
+        statement.setLong(9,item.entryTimeMillis)
         boolean result = statement.execute()
         statement.closed?:statement.close()
         result
@@ -130,7 +132,8 @@ class DbHelper implements DbInterface{
                 "start_date," +
                 "start_ms," +
                 "end_date," +
-                "end_ms FROM "+
+                "end_ms, "+
+                "entry_time FROM "+
                 "$Database.EMPLOYEE ORDER BY _id DESC ")
         def items=[]
         while(resultSet.next()){
@@ -145,6 +148,7 @@ class DbHelper implements DbInterface{
             employeeRest.startTimeMillis=resultSet.getLong(7)
             employeeRest.endDate=resultSet.getString(8)
             employeeRest.endTimeMillis=resultSet.getLong(9)
+            employeeRest.entryTimeMillis=resultSet.getLong(10)
             items<<employeeRest
         }
         statement.closed?:statement.close()

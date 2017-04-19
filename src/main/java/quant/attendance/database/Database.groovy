@@ -22,7 +22,7 @@ class Database {
             //部门表
             statement.execute("CREATE TABLE IF NOT EXISTS $DEPARTMENT(_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,work_day TEXT,start_date TEXT,start_ms LONG,end_date TEXT,end_ms LONG)")
             //员工表
-            statement.execute("CREATE TABLE IF NOT EXISTS $EMPLOYEE(_id INTEGER PRIMARY KEY AUTOINCREMENT,department_id INTEGER,department_name INTEGER,name TEXT,work_day TEXT,start_date TEXT,start_ms LONG,end_date TEXT,end_ms LONG)")
+            statement.execute("CREATE TABLE IF NOT EXISTS $EMPLOYEE(_id INTEGER PRIMARY KEY AUTOINCREMENT,department_id INTEGER,department_name INTEGER,name TEXT,work_day TEXT,start_date TEXT,start_ms LONG,end_date TEXT,end_ms LONG,entry_time LONG)")
         } catch (ex) {
             ex.printStackTrace()
         } finally {

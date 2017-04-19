@@ -147,9 +147,9 @@ class Analyser {
             final int dayOfWeek = newDateTime.dayOfWeek.value
             final def findHolidayItem=holidayItems.find {it.month==month&&it.day==dayOfMonth}
             newAttendanceItems.each {name, items->
-                EmployeeRest employee = employeeItems.find{it.employeeName==name}
                 //自定义设置休息
                 boolean isWeekend
+                final EmployeeRest employee = employeeItems.find{it.employeeName==name}
                 //部门单独设定员工,假日条目
                 boolean isHolidayWork=!findHolidayItem?false:!findHolidayItem.isWork
                 if(employee){
@@ -160,19 +160,17 @@ class Analyser {
                 }
                 long startEmployeeTime,endEmployeeTime
                 (startEmployeeTime,endEmployeeTime)=getEmployeeWorkTime(name)
-                if("王勇"==name){
-                    println ""
-                }
                 //分析休息时间,判定当天是否为休息时间,休息则定为加班
                 DayAttendance dayAttendance = items.get(dayOfMonth);
                 final AttendanceResult dayResult = new AttendanceResult(name, dayOfMonth);
                 //分析结果集
-                if (null != dayAttendance) {
-                    HashMap<Integer, AttendanceResult> resultItems = results.get(name);
-                    if (null == resultItems) {
-                        resultItems = new HashMap<>();
-                        results.put(name, resultItems);
-                    }
+                HashMap<Integer, AttendanceResult> resultItems = results.get(name);
+                if (null == resultItems) {
+                    results.put(name, resultItems = new HashMap<>());
+                }
+                //当存在考勤信息或者不为周末节日时,保存信息,或者员工入职时间等于/小于当天
+                LocalDateTime entryDateTime=employee?employee.entryDateTime():null
+                if((!entryDateTime||entryDateTime&&0<=newDateTime.compareTo(entryDateTime))&&(dayAttendance||!isWeekend)){
                     resultItems.put(dayOfMonth, dayResult);
                 }
                 //标准上班下班时间值(分)
@@ -204,7 +202,7 @@ class Analyser {
                             dayResult.overMinute = (endAttendance.hour * 60 + endAttendance.minute) - (startAttendance.hour * 60 + startAttendance.minute);
                         }
                     }
-                } else if (null != dayAttendance) {
+                } else if (dayAttendance) {
                     //上班卡
                     Attendance startAttendance = dayAttendance.startAttendance;
                     Attendance endAttendance = dayAttendance.endAttendance;
@@ -264,7 +262,6 @@ class Analyser {
                 } else {
                     dayResult.type |= AttendanceType.ABSENTEEISM;//缺勤
                 }
-
             }
             newDateTime=newDateTime.plusDays(1)
         }

@@ -19,4 +19,6 @@ class EmployeeProperty  extends RecursiveTreeObject<EmployeeProperty> {
     SimpleLongProperty startTimeMillis
     SimpleStringProperty endDate
     SimpleLongProperty endTimeMillis
+    SimpleLongProperty entryTimeMillis
+    SimpleStringProperty entryTime
 }

@@ -282,7 +282,7 @@ class ExcelWriter extends AbsExcelWriter{
         int month=startDateTime.monthValue
         WritableSheet[] sheets = wwb.getSheets();
         WritableSheet sheet = wwb.createSheet(year + "_" + month + "汇总列表", null == sheets ? 1 : sheets.length + 1);
-        String[] titles = ["序 号", "姓名", "正常出勤/天","上班时间","下班时间","工作时间", "旷工/天", "迟到/次", "早退/次","早上未打卡","晚上未打卡", "平时加班/小时", "周末加班/天数", "假日加班/天数", "实际出勤/天"]
+        String[] titles = ["序 号", "姓名", "正常出勤/天","入职时间","上班时间","下班时间","工作时间", "旷工/天", "迟到/次", "早退/次","早上未打卡","晚上未打卡", "平时加班/小时", "周末加班/天数", "假日加班/天数", "实际出勤/天","备注"]
         int index=0
         for (int i = 0; i < titles.length; i++) {
             WritableCellFormat wc = getCellFormat();
@@ -298,41 +298,46 @@ class ExcelWriter extends AbsExcelWriter{
             sheet.addCell(new Label(1, index, it.key, getCellFormat()));//姓名
             sheet.addCell(new Label(2, index, workDays as String, getCellFormat()));//正常出勤/天
 
-            def startDate,endDate,workDaysValue
-            sheet.addCell(new Label(3, index, startDate=employee?employee.startDate:departmentRest.startDate, getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
-            sheet.addCell(new Label(4, index, endDate=employee?employee.endDate:departmentRest.endDate, getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
-            sheet.addCell(new Label(5, index, workDaysValue=employee?employee.workDays.join(","):departmentRest.workDays.join(","), getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
+            def entryTime,startDate,endDate,workDaysValue
+            def localDateTime=employee?employee.entryDateTime():null
+            sheet.addCell(new Label(3, index, entryTime=localDateTime?localDateTime.toLocalDate().toString():"#", getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
+
+            sheet.addCell(new Label(4, index, startDate=employee?employee.startDate:departmentRest.startDate, getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
+            sheet.addCell(new Label(5, index, endDate=employee?employee.endDate:departmentRest.endDate, getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
+            sheet.addCell(new Label(6, index, workDaysValue=employee?employee.workDays.join(","):departmentRest.workDays.join(","), getCellFormat(employee?jxl.format.Colour.LIGHT_GREEN:jxl.format.Colour.WHITE,Alignment.CENTRE)));
 
             int absenteeismDays=getAttendanceTypeDays(it.value,AttendanceType.ABSENTEEISM)
-            sheet.addCell(new Label(6, index, absenteeismDays as String, getCellFormat(0==absenteeismDays?jxl.format.Colour.WHITE:COLOR_ABSENTEEISM)));//旷工/天
+            sheet.addCell(new Label(7, index, absenteeismDays as String, getCellFormat(0==absenteeismDays?jxl.format.Colour.WHITE:COLOR_ABSENTEEISM)));//旷工/天
             int lateDays=getAttendanceTypeDays(it.value,AttendanceType.LATE)
-            sheet.addCell(new Label(7, index,lateDays as String, getCellFormat(0==lateDays?jxl.format.Colour.WHITE:COLOR_LATE)));//迟到/次
+            sheet.addCell(new Label(8, index,lateDays as String, getCellFormat(0==lateDays?jxl.format.Colour.WHITE:COLOR_LATE)));//迟到/次
             int levelEarlyDays=getAttendanceTypeDays(it.value,AttendanceType.LEVEL_EARLY)
-            sheet.addCell(new Label(8, index, levelEarlyDays as String, getCellFormat(0==levelEarlyDays?jxl.format.Colour.WHITE:COLOR_LEVEL_EARLY)));//早退/次
+            sheet.addCell(new Label(9, index, levelEarlyDays as String, getCellFormat(0==levelEarlyDays?jxl.format.Colour.WHITE:COLOR_LEVEL_EARLY)));//早退/次
 
             int unCheckInDays=getAttendanceTypeDays(it.value,AttendanceType.UN_CHECK_IN)
-            sheet.addCell(new Label(9, index, unCheckInDays as String, getCellFormat(0==unCheckInDays?jxl.format.Colour.WHITE:COLOR_UN_CHECK_IN)));//早上未打卡
+            sheet.addCell(new Label(10, index, unCheckInDays as String, getCellFormat(0==unCheckInDays?jxl.format.Colour.WHITE:COLOR_UN_CHECK_IN)));//早上未打卡
             int unCheckOutDays=getAttendanceTypeDays(it.value,AttendanceType.UN_CHECK_OUT)
-            sheet.addCell(new Label(10, index, unCheckOutDays as String, getCellFormat(0==unCheckOutDays?jxl.format.Colour.WHITE:COLOR_UN_CHECK_OUT)));//晚上未打卡
+            sheet.addCell(new Label(11, index, unCheckOutDays as String, getCellFormat(0==unCheckOutDays?jxl.format.Colour.WHITE:COLOR_UN_CHECK_OUT)));//晚上未打卡
 
             int workHour,days
             (workHour,days)=getAttendanceOverWorkDays(it.value)
             def overTime=0==days?"#":"${workHour}时/${days}天"
-            sheet.addCell(new Label(11, index, overTime, getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_OVER_TIME)));//平时加班/小时
+            sheet.addCell(new Label(12, index, overTime, getCellFormat(0==days?jxl.format.Colour.WHITE:COLOR_OVER_TIME)));//平时加班/小时
 
             int weekendOverTimeDays
             (workHour,weekendOverTimeDays)=getAttendanceWeekOverWorkDays(it.value,AttendanceType.WEEKEND_OVER_TIME)
             def weekendOverTime=0==weekendOverTimeDays?"#":"${workHour}时/${weekendOverTimeDays}天"
-            sheet.addCell(new Label(12, index, weekendOverTime, getCellFormat(0==weekendOverTimeDays?jxl.format.Colour.WHITE:COLOR_WEEKEND_OVER_TIME)));//周末加班/天数
+            sheet.addCell(new Label(13, index, weekendOverTime, getCellFormat(0==weekendOverTimeDays?jxl.format.Colour.WHITE:COLOR_WEEKEND_OVER_TIME)));//周末加班/天数
             int holidayOverTimeDays
             (workHour,holidayOverTimeDays)=getAttendanceWeekOverWorkDays(it.value,AttendanceType.HOLIDAY_OVER_TIME)
             def holidayOverTime=0==holidayOverTimeDays?"#":"${workHour}时/${holidayOverTimeDays}天"
-            sheet.addCell(new Label(13, index, holidayOverTime, getCellFormat(0==holidayOverTime?jxl.format.Colour.WHITE:COLOR_HOLIDAY_OVER_TIME)));//假日加班/天数
-            sheet.addCell(new Label(14, index, it.value.size() as String, getCellFormat()));//实际出勤/天
+            sheet.addCell(new Label(14, index, holidayOverTime, getCellFormat(0==holidayOverTime?jxl.format.Colour.WHITE:COLOR_HOLIDAY_OVER_TIME)));//假日加班/天数
+
+            sheet.addCell(new Label(15, index, getAttendanceWorkDays(it.value) as String, getCellFormat()));//实际出勤/天
+            sheet.addCell(new Label(16, index, getAttendanceRemark(it.value) as String, getCellFormat()));//分析员工信息
             InformantRegistry.getInstance(). notifyMessage("员工:$it.key 考勤分类信息汇总完毕!");
             //检测最长字符
             int itemIndex=0
-            [index,it.key,workDays,startDate,endDate,workDaysValue,absenteeismDays,lateDays,levelEarlyDays,unCheckInDays,unCheckOutDays,overTime,weekendOverTime,holidayOverTime,it.value.size()].each { checkMaxValue(maxValueItems,itemIndex++,it as String) }
+            [index,it.key,workDays,entryTime,startDate,endDate,workDaysValue,absenteeismDays,lateDays,levelEarlyDays,unCheckInDays,unCheckOutDays,overTime,weekendOverTime,holidayOverTime,it.value.size()].each { checkMaxValue(maxValueItems,itemIndex++,it as String) }
         }
         maxValueItems.each { sheet.setColumnView(it.key as Integer, getBestNum(it.value)); }
         InformantRegistry.getInstance(). notifyMessage("初始化员工考勤汇总信息完成!");
@@ -348,7 +353,16 @@ class ExcelWriter extends AbsExcelWriter{
             maxValueItems<<[(index):content]
         }
     }
-
+    /**
+     * 获得员工实际出勤天数
+     * @param items
+     * @return
+     */
+    int getAttendanceWorkDays(items){
+        int days=0
+        items.each{ 0!=(it.value.type&AttendanceType.ABSENTEEISM)?:days++ }
+        days
+    }
     /**
      * 获得员工指定标记天数
      * @param items
@@ -415,6 +429,10 @@ class ExcelWriter extends AbsExcelWriter{
             }
         }
         workDays
+    }
+
+    def getAttendanceRemark(items){
+        ""
     }
 
     private int getDayIndex(int day) {

@@ -7,6 +7,10 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+
 /**
  * Created by Administrator on 2017/4/8.
  */
@@ -33,6 +37,14 @@ class DepartmentRest {
         property.endDate=new SimpleStringProperty(endDate)
         property.endTimeMillis=new SimpleLongProperty(endTimeMillis)
         property
+    }
+
+    def startLocalTime(){
+        LocalTime.ofSecondOfDay(startTimeMillis/1000 as Long)
+    }
+
+    def endLocalTime(){
+        LocalTime.ofSecondOfDay(endTimeMillis/1000 as Long)
     }
 
     def workDayToString(){

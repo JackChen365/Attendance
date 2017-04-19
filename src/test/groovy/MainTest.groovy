@@ -3,6 +3,8 @@ import quant.attendance.excel.reader.ExcelReaderB
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.regex.Pattern
 
 /**
@@ -57,8 +59,10 @@ def testReader(){
 }
 
 def testFunc(){
-    [1,2]
+    def entryDateTime1=LocalDateTime.of(LocalDate.of(2017,4,17),LocalTime.of(0,0))
+    def entryDateTime2=LocalDateTime.of(LocalDate.of(2017,4,18),LocalTime.of(0,0))
+    println entryDateTime1.compareTo(entryDateTime2)
 }
 
-//testDate()
+testFunc()
 //testReader()
