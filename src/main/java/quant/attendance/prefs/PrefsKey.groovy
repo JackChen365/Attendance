@@ -5,6 +5,7 @@ package quant.attendance.prefs
  */
 public interface PrefsKey {
     String INIT="init"
+    String VERSION="version"
     String WORK_HOUR="work_hour"
 
     String COLOR_LATE="late"

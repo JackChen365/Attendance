@@ -9,6 +9,9 @@ import quant.attendance.prefs.FilePrefs;
 import quant.attendance.prefs.PrefsKey;
 import quant.attendance.prefs.SharedPrefs;
 import quant.attendance.util.FileUtils;
+import quant.attendance.util.TextUtils;
+
+import java.nio.file.Files;
 
 /**
  * Created by cz on 2017/3/6.
@@ -17,12 +20,23 @@ import quant.attendance.util.FileUtils;
  * 3:apk包copy
  */
 public class Main extends Application {
+    final static String VERSION="2.0";
     @Override
     public void start(Stage primaryStage) throws Exception{
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
         //检测用户是否可以登录
         StageManager stageManager = StageManager.getInstance();
         boolean init = SharedPrefs.getBoolean(PrefsKey.INIT);
+        String version = SharedPrefs.get(PrefsKey.VERSION);
+        if(TextUtils.isEmpty(version)){
+            //初次安装,删除所有用户目录
+            FileUtils.deleteDir(FilePrefs.APP_FOLDER);
+            FilePrefs.ensureAllFolder();
+            SharedPrefs.save(PrefsKey.VERSION,VERSION);
+        } else if(!VERSION.equals(version)){
+            //TODO 版本不同
+            SharedPrefs.save(PrefsKey.VERSION,VERSION);
+        }
         primaryStage.setTitle("Hello!");
         if(!init){
             //初始化配置

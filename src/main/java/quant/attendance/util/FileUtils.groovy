@@ -21,6 +21,12 @@ class FileUtils {
         }
     }
 
+    static void deleteDir(File dir){
+        if(dir.isDirectory()){
+            dir.deleteDir()
+        }
+    }
+
     static def loadProperty(File file){
         Properties properties
         InputStream inputStream = new FileInputStream(file)

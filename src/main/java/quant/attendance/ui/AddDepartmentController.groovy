@@ -8,6 +8,7 @@ import com.jfoenix.controls.JFXToggleNode
 import com.jfoenix.controls.JFXTreeTableColumn
 import com.jfoenix.controls.JFXTreeTableView
 import com.jfoenix.controls.RecursiveTreeItem
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.Event
 import javafx.fxml.FXML
@@ -69,18 +70,7 @@ class AddDepartmentController implements InitializableArgs<Boolean>{
         if(!init){
             titleLabel.setText("你好 欢迎使用!")
             exitButton.setText("开始使用")
-            exitButton.setOnMouseClicked({
-                if(!departmentItems){
-                    dialogTitle.setText("温馨提示")
-                    dialogContent.setText("请必须添加一个部门出勤信息,否则将无部门参照信息!")
-                    dialogAcceptButton.setOnMouseClicked({dialog.close()})
-                    dialog.show(root)
-                } else {
-                    SharedPrefs.save(PrefsKey.INIT,true)
-                    StageManager.instance.getStage(this)?.close()
-                    StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/main_layout.fxml"), 960, 720)?.show()
-                }
-            })
+            exitButton.setOnMouseClicked({ startUseApplication()})
         } else {
             titleLabel.setText("添加新的部门考勤信息")
             exitButton.setText("退出")
@@ -105,13 +95,38 @@ class AddDepartmentController implements InitializableArgs<Boolean>{
                 DbHelper.helper.insertDepartment(item)
                 departmentItems<<item
                 departmentField.setText(null)
-                snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("添加部门成功!",null,2000, null))
                 //更新表格数据
                 departmentProperties.add(item.toProperty())
                 departmentTable.refresh()
+                //提示可以使用
+                exitButton.setDisable(false)
+                dialogTitle.setText("温馨提示")
+                dialogContent.setText("很好,您现在可以开始使用了!")
+                dialogAcceptButton.setOnMouseClicked({
+                    startUseApplication()
+                    dialog.close()
+                })
+                dialog.show(root)
                 RxBus.post(new OnDepartmentAddedEvent(item))
             }
         })
+    }
+
+    void startUseApplication(){
+        if(!departmentItems){
+            dialogTitle.setText("温馨提示")
+            dialogContent.setText("请必须添加一个部门出勤信息,否则将无部门参照信息!")
+            dialogAcceptButton.setOnMouseClicked({dialog.close()})
+            dialog.show(root)
+        } else {
+            SharedPrefs.save(PrefsKey.INIT,true)
+            StageManager.instance.getStage(this)?.close()
+            def stage=StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/main_layout.fxml"), 960, 720)
+            if(stage){
+                stage.setOnCloseRequest({Platform.exit()})
+                stage?.show()
+            }
+        }
     }
 
     def validatorDepartmentInfo(){

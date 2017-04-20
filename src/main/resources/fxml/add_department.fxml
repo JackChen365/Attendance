@@ -116,7 +116,7 @@
 					<Insets left="12" right="12" />
 				</HBox.margin>
 		</JFXButton>
-			<JFXButton fx:id="exitButton" text="开始使用" styleClass="custom-jfx-button-raised"/>
+			<JFXButton fx:id="exitButton" text="开始使用" disable="true" styleClass="custom-jfx-button-raised"/>
 		</HBox>
 	</VBox>
 

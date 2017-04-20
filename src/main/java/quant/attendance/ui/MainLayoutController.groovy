@@ -2,6 +2,7 @@ package quant.attendance.ui
 
 import com.google.common.io.Files
 import com.jfoenix.controls.JFXButton
+import com.jfoenix.controls.JFXDialog
 import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
 import com.jfoenix.controls.JFXTreeTableView
@@ -10,8 +11,13 @@ import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.Event
+import javafx.event.EventHandler
+import javafx.event.EventType
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
+import javafx.scene.control.ContextMenu
+import javafx.scene.control.MenuItem
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.stage.FileChooser
 import org.fxmisc.richtext.StyleClassedTextArea
@@ -48,16 +54,19 @@ class MainLayoutController implements Initializable{
 
     @FXML DragTextField attendanceFile
 
-    @FXML JFXTreeTableView employeeTable
+    @FXML JFXTreeTableView<EmployeeProperty> employeeTable
     @FXML JFXTreeTableColumn departmentEmployeeName
     @FXML JFXTreeTableColumn employeeName
     @FXML JFXTreeTableColumn employeeEntryName
     @FXML JFXTreeTableColumn employeeStartTime
     @FXML JFXTreeTableColumn employeeEndTime
 
+    @FXML JFXDialog dialog
+    @FXML JFXButton dialogCancelButton
+    @FXML JFXButton dialogAcceptButton
+
     @FXML JFXButton saveButton
     @FXML JFXButton exitButton
-
     @FXML JFXSnackbar snackBar
     @FXML JFXButton fileChoose1
     @FXML StyleClassedTextArea messageArea
@@ -67,13 +76,21 @@ class MainLayoutController implements Initializable{
 
     @Override
     void initialize(URL location, ResourceBundle resources) {
-        snackBar.registerSnackbarContainer(root)
+
         final def stage=StageManager.instance.getStage(this)
         initTableItems()
         initEvent()
         attendanceFile.setDragListener{ processAttendanceFile(it)}
         exitButton.setOnMouseClicked({Platform.exit()})
         setButtonMouseClicked(fileChoose1,stage,{processAttendanceFile(it)})
+
+        snackBar.registerSnackbarContainer(root)
+        dialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
+        dialogCancelButton.setOnMouseClicked({dialog.close()})
+        dialogAcceptButton.setOnMouseClicked({
+            handleNewDepartmentAction()
+            dialog.close()
+        })
     }
 
 
@@ -103,6 +120,32 @@ class MainLayoutController implements Initializable{
         departmentTable.setRoot(new RecursiveTreeItem<DepartmentProperty>(departmentProperties, { it.getChildren() }))
         departmentTable.setShowRoot(false)
         departmentTable.selectionModel.select(0)
+        departmentTable.selectionModel.selectedIndex=0
+        final ContextMenu menu = new ContextMenu();
+        final MenuItem newDepartmentItem= new MenuItem("新的部门");
+        final MenuItem deleteAllSelectedItem= new MenuItem("删除选中部门");
+        newDepartmentItem.setOnAction({handleNewDepartmentAction()})
+        deleteAllSelectedItem.setOnAction({ departmentProperties.isEmpty()?: deleteSelectDepartment(departmentTable.selectionModel.selectedItem.value) })
+        menu.getItems().addAll(newDepartmentItem,deleteAllSelectedItem);
+        departmentTable.setContextMenu(menu);
+    }
+
+    /**
+     * 删除选中部门
+     * @param departmentProperty
+     */
+    def deleteSelectDepartment(DepartmentProperty item) {
+        if(item){
+            //删除部门
+            DbHelper.helper.deleteDepartment(item.id.intValue(),item.departmentName.value)
+            //删除所在部门所有员工
+            DbHelper.helper.deleteEmployeeByDepartmentId(item.id.intValue())
+            departmentProperties.remove(item)
+            departmentTable.refresh()
+            //删除集合内所有员工
+            employeeProperties.removeAll {item.id.intValue()==it.departmentId.get()}
+            employeeTable.refresh()
+        }
     }
 
     private void initEmployeePropertyTable(items) {
@@ -113,7 +156,24 @@ class MainLayoutController implements Initializable{
         employeeEndTime.setCellValueFactory({ employeeEndTime.validateValue(it) ? it.value.value.endDate : employeeEndTime.getComputedValue(it) })
         !items?:items.each{ employeeProperties.add(it.toProperty()) }
         employeeTable.setRoot(new RecursiveTreeItem<EmployeeProperty>(employeeProperties, { it.getChildren() }))
+        employeeTable.setPredicate({ it.value.departmentId.get()==departmentTable.selectionModel.selectedItem.value.id.get() })
         employeeTable.setShowRoot(false)
+
+        final ContextMenu menu = new ContextMenu();
+        final MenuItem newEmployeeItem= new MenuItem("新的员工");
+        final MenuItem deleteAllSelectedItem= new MenuItem("删除选中员工");
+        newEmployeeItem.setOnAction({handleNewEmployeeAction()})
+        deleteAllSelectedItem.setOnAction({ employeeProperties.isEmpty()?: deleteSelectEmployee(employeeTable.selectionModel.selectedItem.value) })
+        menu.getItems().addAll(newEmployeeItem,deleteAllSelectedItem);
+        employeeTable.setContextMenu(menu);
+    }
+
+    def deleteSelectEmployee(EmployeeProperty item) {
+        if(item){
+            DbHelper.helper.deleteEmployeeRest(item.id.intValue(),item.employeeName.value)
+            employeeProperties.remove(item)
+            employeeTable.refresh()
+        }
     }
 
     void initEvent() {
@@ -190,6 +250,9 @@ class MainLayoutController implements Initializable{
         fileChooser.setTitle("保存考勤文件")
         File file = fileChooser.showSaveDialog(stage)
         if (file.absolutePath!=target.absolutePath) {
+            if(!file.name.endsWith(".xls")&&!file.name.endsWith(".xlsx")){
+                file=new File(file.parentFile,"${file.name}.xls")
+            }
             Files.copy(target,file)
             !target.exists()?:target.delete()
         }
@@ -239,12 +302,17 @@ class MainLayoutController implements Initializable{
         //TODO 关于
     }
 
-    public void handleNewDepartmentAction(ActionEvent actionEvent) {
+    public void handleNewDepartmentAction(ActionEvent actionEvent=null) {
         StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/add_department.fxml"),true, 640, 720)?.show()
     }
 
-    public void handleNewEmployeeAction(ActionEvent actionEvent) {
-        StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/add_employee.fxml"), 640, 720)?.show()
+    public void handleNewEmployeeAction(ActionEvent actionEvent=null) {
+        println departmentTable.currentItemsCount
+        if(departmentProperties.isEmpty()){
+            dialog.show(root)
+        } else {
+            StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/add_employee.fxml"), 640, 720)?.show()
+        }
     }
 
     public void handleHolidayAction(ActionEvent actionEvent) {

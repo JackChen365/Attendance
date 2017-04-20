@@ -12,7 +12,6 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
 <StackPane fx:id="root"
 		   fx:controller="quant.attendance.ui.MainLayoutController"
 		   xmlns:fx="http://javafx.com/fxml/1"
@@ -113,5 +112,20 @@
 			</GridPane>
 		</HBox>
 	</VBox>
+	<JFXDialog fx:id="dialog">
+		<JFXDialogLayout>
+			<heading>
+				<Label fx:id="dialogTitle" text="特别提示"/>
+			</heading>
+			<body>
+				<Label fx:id="dialogContent" text="必须添加一个员工部门才可以添加员工!"/>
+			</body>
+			<actions>
+				<JFXButton fx:id="dialogCancelButton" styleClass="dialog-accept" text="取消"/>
+				<JFXButton fx:id="dialogAcceptButton" styleClass="dialog-accept" text="添加部门"/>
+			</actions>
+		</JFXDialogLayout>
+	</JFXDialog>
+
 	<JFXSnackbar fx:id="snackBar" prefWidth="420" />
 </StackPane>

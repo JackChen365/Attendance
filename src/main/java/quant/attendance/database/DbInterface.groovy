@@ -10,7 +10,7 @@ interface DbInterface {
 
     boolean insertDepartment(DepartmentRest item)
 
-    void deleteDepartment(DepartmentRest item)
+    void deleteDepartment(int id,String name)
 
     void updateDepartment(DepartmentRest item)
 
@@ -18,7 +18,9 @@ interface DbInterface {
 
     boolean insertEmployeeRest(EmployeeRest item)
 
-    void deleteEmployeeRest(EmployeeRest item)
+    void deleteEmployeeByDepartmentId(int id)
+
+    void deleteEmployeeRest(int id,String name)
 
     void updateEmployeeRest(EmployeeRest item)
 

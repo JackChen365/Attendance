@@ -40,8 +40,14 @@ class DbHelper implements DbInterface{
     }
 
     @Override
-    void deleteDepartment(DepartmentRest item) {
-
+    void deleteDepartment(int id,String name) {
+        def connection=Database.connection
+        PreparedStatement statement = connection.prepareStatement("delete FROM $Database.DEPARTMENT WHERE _id=? and name=?")
+        statement.setInt(1,id)
+        statement.setString(2,name)
+        boolean result = statement.execute()
+        statement.closed?:statement.close()
+        result
     }
 
     @Override
@@ -110,8 +116,24 @@ class DbHelper implements DbInterface{
     }
 
     @Override
-    void deleteEmployeeRest(EmployeeRest item) {
+    void deleteEmployeeByDepartmentId(int id) {
+        def connection=Database.connection
+        PreparedStatement statement = connection.prepareStatement("delete FROM $Database.EMPLOYEE WHERE department_id=?")
+        statement.setInt(1,id)
+        boolean result = statement.execute()
+        statement.closed?:statement.close()
+        result
+    }
 
+    @Override
+    void deleteEmployeeRest(int id,String name) {
+        def connection=Database.connection
+        PreparedStatement statement = connection.prepareStatement("delete FROM $Database.EMPLOYEE WHERE _id=? and name=?")
+        statement.setInt(1,id)
+        statement.setString(2,name)
+        boolean result = statement.execute()
+        statement.closed?:statement.close()
+        result
     }
 
     @Override
