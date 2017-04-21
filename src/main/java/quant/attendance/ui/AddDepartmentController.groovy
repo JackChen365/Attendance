@@ -76,6 +76,7 @@ class AddDepartmentController implements InitializableArgs<Boolean>{
             exitButton.setText("退出")
             exitButton.setOnMouseClicked({ StageManager.instance.getStage(this)?.close()})
         }
+        exitButton.setDisable(!init)//初次使用,禁用开始使用
         startTimeSpinner.valueFactory.setValue(LocalTime.of(9, 0))
         endTimeSpinner.valueFactory.setValue(LocalTime.of(18, 0))
 
@@ -100,13 +101,15 @@ class AddDepartmentController implements InitializableArgs<Boolean>{
                 departmentTable.refresh()
                 //提示可以使用
                 exitButton.setDisable(false)
-                dialogTitle.setText("温馨提示")
-                dialogContent.setText("很好,您现在可以开始使用了!")
-                dialogAcceptButton.setOnMouseClicked({
-                    startUseApplication()
-                    dialog.close()
-                })
-                dialog.show(root)
+                if(!init){
+                    dialogTitle.setText("温馨提示")
+                    dialogContent.setText("很好,您现在可以开始使用了!")
+                    dialogAcceptButton.setOnMouseClicked({
+                        startUseApplication()
+                        dialog.close()
+                    })
+                    dialog.show(root)
+                }
                 RxBus.post(new OnDepartmentAddedEvent(item))
             }
         })

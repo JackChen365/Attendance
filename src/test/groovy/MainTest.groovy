@@ -1,11 +1,10 @@
 import groovy.io.FileType
+import quant.attendance.excel.reader.ExcelReaderA
 import quant.attendance.excel.reader.ExcelReaderB
+import quant.attendance.util.Analyser
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
-import java.util.regex.Pattern
 
 /**
  * Created by Administrator on 2017/4/9.
@@ -70,5 +69,15 @@ def testFunc(){
     }
 }
 
-testFunc()
+def testRead(){
+    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\智胜3月考勤.xls")
+    def attendanceItems=new ExcelReaderA().attendanceRead(file)
+    def analyser=new Analyser(attendanceItems,null,null,null)
+    def items=analyser.analyzerAttendanceUnKnowItems()
+    items.each {
+        println "$it.name 待确认入职:$it.entryDate 待确认离职:$it.departureDate"
+    }
+}
+
+testRead()
 //testReader()

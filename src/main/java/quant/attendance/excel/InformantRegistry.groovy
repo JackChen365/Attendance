@@ -1,5 +1,6 @@
 package quant.attendance.excel
 
+import com.sun.javafx.tk.Toolkit
 import javafx.application.Platform
 import quant.attendance.util.TextUtils
 
@@ -23,11 +24,11 @@ class InformantRegistry {
      * @param message
      */
     public void notifyMessage(String message) {
-        if(Platform.fxApplicationThread){
-            listenerItems.each {it(message)}
-        } else {
-            Platform.runLater({ listenerItems.each {it(message)} })
-        }
+//        if(Platform.fxApplicationThread){
+//            listenerItems.each {it(message)}
+//        } else {
+//            Platform.runLater({ listenerItems.each {it(message)} })
+//        }
     }
 
     void addListener(consumer){

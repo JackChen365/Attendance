@@ -7,17 +7,16 @@ import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
 import com.jfoenix.controls.JFXTreeTableView
 import com.jfoenix.controls.RecursiveTreeItem
+import com.sun.javafx.PlatformUtil
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.Event
-import javafx.event.EventHandler
-import javafx.event.EventType
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
-import javafx.scene.input.MouseEvent
+import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.layout.StackPane
 import javafx.stage.FileChooser
 import org.fxmisc.richtext.StyleClassedTextArea
@@ -32,9 +31,11 @@ import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.DepartmentProperty
 import quant.attendance.model.EmployeeProperty
 import quant.attendance.model.HolidayItem
+import quant.attendance.model.UnKnowAttendanceProperty
 import quant.attendance.prefs.FilePrefs
 import quant.attendance.scheduler.MainThreadSchedulers
 import quant.attendance.util.Analyser
+import quant.attendance.util.AnalyserUnKnow
 import quant.attendance.util.FileUtils
 import quant.attendance.widget.drag.DragTextField
 import rx.Observable
@@ -61,10 +62,19 @@ class MainLayoutController implements Initializable{
     @FXML JFXTreeTableColumn employeeStartTime
     @FXML JFXTreeTableColumn employeeEndTime
 
+    @FXML JFXDialog unKnowDialog
+    @FXML JFXButton acceptButton
+    @FXML JFXTreeTableView<UnKnowAttendanceProperty> unKnowTable
+    @FXML JFXTreeTableColumn unKnowEmployeeCell
+    @FXML JFXTreeTableColumn entryDateCell
+    @FXML JFXTreeTableColumn departureDateCell
+    @FXML JFXTreeTableColumn acceptCell
+
     @FXML JFXDialog dialog
     @FXML JFXButton dialogCancelButton
     @FXML JFXButton dialogAcceptButton
 
+    @FXML JFXButton openButton
     @FXML JFXButton saveButton
     @FXML JFXButton exitButton
     @FXML JFXSnackbar snackBar
@@ -73,10 +83,10 @@ class MainLayoutController implements Initializable{
     final def departmentItems=[], employeeItems=[]
     final def departmentProperties = FXCollections.observableArrayList()
     final def employeeProperties = FXCollections.observableArrayList()
+    final def unKnowProperties = FXCollections.observableArrayList()
 
     @Override
     void initialize(URL location, ResourceBundle resources) {
-
         final def stage=StageManager.instance.getStage(this)
         initTableItems()
         initEvent()
@@ -86,7 +96,10 @@ class MainLayoutController implements Initializable{
 
         snackBar.registerSnackbarContainer(root)
         dialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
+        unKnowDialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
+        unKnowDialog.setOverlayClose(false)//点击外围不消失
         dialogCancelButton.setOnMouseClicked({dialog.close()})
+
         dialogAcceptButton.setOnMouseClicked({
             handleNewDepartmentAction()
             dialog.close()
@@ -109,6 +122,7 @@ class MainLayoutController implements Initializable{
                     this.employeeItems.addAll(employeeItems)
                     initDepartmentPropertyTable(departmentItems)
                     initEmployeePropertyTable(employeeItems)
+                    initUnKnowPropertyTable([])
                 }, { e -> e.printStackTrace() })
     }
 
@@ -156,7 +170,7 @@ class MainLayoutController implements Initializable{
         employeeEndTime.setCellValueFactory({ employeeEndTime.validateValue(it) ? it.value.value.endDate : employeeEndTime.getComputedValue(it) })
         !items?:items.each{ employeeProperties.add(it.toProperty()) }
         employeeTable.setRoot(new RecursiveTreeItem<EmployeeProperty>(employeeProperties, { it.getChildren() }))
-        employeeTable.setPredicate({ it.value.departmentId.get()==departmentTable.selectionModel.selectedItem.value.id.get() })
+        !items?:employeeTable.setPredicate({ it.value.departmentId.get()==departmentTable.selectionModel.selectedItem.value.id.get() })
         employeeTable.setShowRoot(false)
 
         final ContextMenu menu = new ContextMenu();
@@ -176,12 +190,32 @@ class MainLayoutController implements Initializable{
         }
     }
 
+    /**
+     * 初始化未知待确认条目
+     * @param items
+     */
+    private void initUnKnowPropertyTable(items) {
+        unKnowEmployeeCell.setCellValueFactory({ unKnowEmployeeCell.validateValue(it) ? it.value.value.name : unKnowEmployeeCell.getComputedValue(it) })
+        entryDateCell.setCellValueFactory({ entryDateCell.validateValue(it) ? it.value.value.entryDate : entryDateCell.getComputedValue(it) })
+        departureDateCell.setCellValueFactory({ departureDateCell.validateValue(it) ? it.value.value.departureDate : departureDateCell.getComputedValue(it) })
+
+        acceptCell.setCellValueFactory({ acceptCell.validateValue(it) ? it.value.value.selected : acceptCell.getComputedValue(it) })
+        acceptCell.setCellFactory(CheckBoxTreeTableCell.forTreeTableColumn(acceptCell));
+        !items?:items.each{ unKnowProperties.add(it.toProperty()) }
+        unKnowTable.setRoot(new RecursiveTreeItem<UnKnowAttendanceProperty>(unKnowProperties, { it.getChildren() }))
+        unKnowTable.setShowRoot(false)
+    }
+
     void initEvent() {
         RxBus.subscribe(OnDepartmentAddedEvent.class){
             departmentProperties.add(it.departmentItem.toProperty())
             departmentTable.refresh()
+            if(1==departmentProperties.size()){
+                departmentTable.selectionModel.select(0)
+            }
         }
         RxBus.subscribe(OnEmployeeAddedEvent.class){
+            employeeItems<<it.employeeItem
             employeeProperties.add(it.employeeItem.toProperty())
             employeeTable.refresh()
         }
@@ -224,18 +258,48 @@ class MainLayoutController implements Initializable{
                 if(!holidays){
                     //TODO 配置模板提示
                 } else {
-                    def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays)
-                    def result=analyser.result()
-                    def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays)
-                    sub.onNext(excelWriter.writeExcel())
+                    def writeExcelClosure={unKnowItems->
+                        def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays,unKnowItems)
+                        def result=analyser.result()
+                        def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays)
+                        sub.onNext(excelWriter.writeExcel())
+                        sub.onCompleted()
+                    }
+                    def analyserUnKnow=new AnalyserUnKnow(attendanceItems)
+                    def unKnowItems=analyserUnKnow.analyzerUnKnowItems()
+                    if(unKnowItems){
+                        //存在未知条目,通知用户确认
+                        Platform.runLater({
+                            unKnowProperties.clear()
+                            unKnowItems.each {unKnowProperties.add(it.toProperty())}
+                            unKnowTable.refresh()
+                            acceptButton.setOnMouseClicked({
+                                //过滤未选择员工
+                                unKnowItems.removeAll { item-> !unKnowProperties.find {item.name==it.name.value}.selected.value }
+                                writeExcelClosure.call(unKnowItems)
+                                unKnowDialog.close()
+                            })
+                            unKnowDialog.show(root)
+                        })
+                    } else {
+                        writeExcelClosure.call(null)
+                    }
                 }
-                sub.onCompleted()
             }).subscribeOn(Schedulers.io()).
                     observeOn(MainThreadSchedulers.mainThread()).
                     subscribe({ target->
                         saveButton.setDisable(false)
+                        openButton.setDisable(false)
                         final def stage=StageManager.instance.getStage(this)
                         saveButton.setOnMouseClicked({saveExcelFile(stage,target)})
+                        //打开文件
+                        openButton.setOnMouseClicked({
+                            if(PlatformUtil.mac){
+                                "open $target.absolutePath".execute()
+                            } else if(PlatformUtil.windows){
+                                "cmd  /c  start  $target.absolutePath".execute()
+                            }
+                        })
                     }, { e -> e.printStackTrace() })
         }
     }
@@ -295,7 +359,9 @@ class MainLayoutController implements Initializable{
     }
 
     public void handleDepartmentClick(Event event) {
-        employeeTable.setPredicate({ it.value.departmentId.get()==departmentTable.selectionModel.selectedItem.value.id.get() })
+        if(!employeeProperties.isEmpty()){
+            employeeTable.setPredicate({ it.value.departmentId.get()==departmentTable.selectionModel.selectedItem.value.id.get() })
+        }
     }
 
     public void handleAboutAction(ActionEvent actionEvent) {

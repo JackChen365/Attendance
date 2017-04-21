@@ -8,10 +8,12 @@ import quant.attendance.model.DayAttendance
 import quant.attendance.model.DepartmentRest
 import quant.attendance.model.EmployeeRest
 import quant.attendance.model.HolidayItem
+import quant.attendance.model.UnKnowAttendanceItem
 import quant.attendance.prefs.PrefsKey
 import quant.attendance.prefs.SharedPrefs
 import quant.attendance.ui.SettingController
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -21,21 +23,23 @@ import java.time.ZoneId
 class Analyser {
     final HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems=[:]
     final List<EmployeeRest> employeeItems=[]
+    final List<UnKnowAttendanceItem> unKnowItems=[]
     final long MIN_TIME_MILLIS=2*60*60*1000
     DepartmentRest departmentRest
     LocalDateTime startDateTime,endDateTime
     List<HolidayItem> holidayItems=[]
     final int minWorkHour
 
-    public Analyser(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,DepartmentRest departmentRest, List<EmployeeRest> employeeRests,holidayItems) {
+    public Analyser(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,DepartmentRest departmentRest, List<EmployeeRest> employeeRests,holidayItems,unKnowItems) {
         if (!attendanceItems) {
             InformantRegistry.instance.notifyMessage("员工出勤信息不存在,请文件是否存在,及员工格式!");
         } else {
             this.attendanceItems.putAll(attendanceItems);
         }
         this.departmentRest=departmentRest
-        this.employeeItems.addAll(employeeRests)
+        !employeeRests?:this.employeeItems.addAll(employeeRests)
         !holidayItems?:this.holidayItems.addAll(holidayItems)
+        !unKnowItems?:this.unKnowItems.addAll(unKnowItems)
         //最小加班时长
         def workHourValue=SharedPrefs.get(PrefsKey.WORK_HOUR)
         minWorkHour=workHourValue?Integer.valueOf(workHourValue):SettingController.DEFAULT_WORD_HOUR
@@ -66,7 +70,6 @@ class Analyser {
         InformantRegistry.instance.notifyMessage("计算出勤信息为:$startDateTime.year/$startDateTime.monthValue 起始天:$startDateTime.dayOfMonth  结束日期:$endDateTime.monthValue 月$endDateTime.dayOfMonth")
         [startDateTime,endDateTime]
     }
-
 
     /**
      * 二次分析出勤记录,将多条记录的信息,分解为,最早上班日期-最晚上班日期集
@@ -132,7 +135,6 @@ class Analyser {
         }
         [startEmployeeTime,endEmployeeTime]
     }
-
     /**
      * 获取分析结果
      */
@@ -260,6 +262,7 @@ class Analyser {
                         }
                     }
                 } else {
+                    //TODO 增加异常员工信息过滤
                     dayResult.type |= AttendanceType.ABSENTEEISM;//缺勤
                 }
             }

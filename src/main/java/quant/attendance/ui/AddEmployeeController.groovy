@@ -73,7 +73,7 @@ class AddEmployeeController implements Initializable {
     @FXML JFXButton dialogCancelButton
     final def employeeProperties = FXCollections.observableArrayList()
     final List<EmployeeRest> employeeItems=[]
-    boolean ensureWorkTime, ensureWorkDay,ensureEntryDate
+    boolean ensureWorkTime, ensureWorkDay
 
 
     @Override
@@ -83,9 +83,8 @@ class AddEmployeeController implements Initializable {
         startTimeSpinner.valueFactory.setValue(LocalTime.of(9, 0))
         endTimeSpinner.valueFactory.setValue(LocalTime.of(18, 0))
 
-        def nowDate=LocalDate.now()
+        def nowDate=LocalDate.now().plusMonths(-1)
         entryDatePicker.setValue(LocalDate.of(nowDate.year,nowDate.monthValue,1))
-        entryDatePicker.setOnAction({ ensureEntryDate=true })
 
         dialog.setTransitionType(JFXDialog.DialogTransition.CENTER);
         dialogCancelButton.setOnMouseClicked({dialog.close()})
@@ -166,8 +165,6 @@ class AddEmployeeController implements Initializable {
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("工作起始时间不能小于结束时间!",null,2000, null))
         } else if(employeeItems.find {it.departmentId==selectItem.id&&it.employeeName==employeeField.text}){
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("该部门己存在员工,如重名,请区分填写!",null,2000, null))
-        } else if(!ensureEntryDate) {
-            snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("请确认员工入职时间,以此避免部分员工统计时出现大量差异!",null,2000, null))
         } else {
             if(MIN_WORK_TIME_MILLIS<endTimeMillis-startTimeMillis){ensureWorkTime=true}
             if(DEFAULT_WORK_DAY<=workDayItems.size()){ ensureWorkDay=true }
