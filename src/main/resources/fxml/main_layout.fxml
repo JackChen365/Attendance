@@ -142,6 +142,7 @@
 				</JFXTreeTableView>
 			</body>
 			<actions>
+				<JFXButton fx:id="cancelButton" styleClass="dialog-accept" text="取消"/>
 				<JFXButton fx:id="acceptButton" styleClass="dialog-accept" text="确定"/>
 			</actions>
 		</JFXDialogLayout>

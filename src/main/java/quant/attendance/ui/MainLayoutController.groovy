@@ -64,6 +64,7 @@ class MainLayoutController implements Initializable{
 
     @FXML JFXDialog unKnowDialog
     @FXML JFXButton acceptButton
+    @FXML JFXButton cancelButton
     @FXML JFXTreeTableView<UnKnowAttendanceProperty> unKnowTable
     @FXML JFXTreeTableColumn unKnowEmployeeCell
     @FXML JFXTreeTableColumn entryDateCell
@@ -96,9 +97,14 @@ class MainLayoutController implements Initializable{
 
         snackBar.registerSnackbarContainer(root)
         dialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
+        dialogCancelButton.setOnMouseClicked({dialog.close()})
+
         unKnowDialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
         unKnowDialog.setOverlayClose(false)//点击外围不消失
-        dialogCancelButton.setOnMouseClicked({dialog.close()})
+        cancelButton.setOnMouseClicked({
+            messageArea.clear()
+            unKnowDialog.close()
+        })
 
         dialogAcceptButton.setOnMouseClicked({
             handleNewDepartmentAction()
@@ -261,7 +267,7 @@ class MainLayoutController implements Initializable{
                     def writeExcelClosure={unKnowItems->
                         def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays,unKnowItems)
                         def result=analyser.result()
-                        def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays)
+                        def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays,unKnowItems)
                         sub.onNext(excelWriter.writeExcel())
                         sub.onCompleted()
                     }

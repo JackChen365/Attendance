@@ -12,6 +12,7 @@ import quant.attendance.model.AttendanceResult
 import quant.attendance.model.DepartmentRest
 import quant.attendance.model.Employee
 import quant.attendance.model.EmployeeRest
+import quant.attendance.model.UnKnowAttendanceItem
 import quant.attendance.prefs.PrefsKey
 import quant.attendance.prefs.SharedPrefs
 import quant.attendance.util.IOUtils
@@ -40,10 +41,11 @@ abstract class AbsExcelWriter {
     private final List<Employee> employeeItems;
     DepartmentRest departmentRest
     LocalDateTime startDateTime, endDateTime;
+    final List<UnKnowAttendanceItem> unKnowItems=[]
     final Map<String,RGB> colorItems=[:]
     final def holidayItems
 
-    public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems,holidayItems) {
+    public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems,holidayItems,unKnowItems) {
         this.startDateTime=startDateTime;
         this.endDateTime=endDateTime;
         this.departmentRest=departmentRest
@@ -60,6 +62,7 @@ abstract class AbsExcelWriter {
         } else {
             InformantRegistry.getInstance().notifyMessage("员工集为空!");
         }
+        !unKnowItems?:this.unKnowItems.addAll(unKnowItems)
 
         //初始化配置颜色
         addColorItem(PrefsKey.COLOR_LATE,Color.BISQUE,COLOR_LATE)
