@@ -156,9 +156,9 @@ class Analyser {
                 boolean isHolidayWork=!findHolidayItem?false:!findHolidayItem.isWork
                 if(employee){
                     //判断是否为非工作日加班,1:周末2:非假日调休日上班
-                    isWeekend=!employee.workDays.contains(dayOfWeek)||isHolidayWork
+                    isWeekend=(!employee.workDays.contains(dayOfWeek)&&!findHolidayItem)||isHolidayWork
                 } else {
-                    isWeekend=!departmentRest.workDays.contains(dayOfWeek)||isHolidayWork
+                    isWeekend=(!departmentRest.workDays.contains(dayOfWeek)&&!findHolidayItem)||isHolidayWork
                 }
                 //当用户为不确定入职,离职信息员工
                 def unKnowItem=unKnowItems.find {it.name==name}
@@ -209,19 +209,19 @@ class Analyser {
         Attendance startAttendance = dayAttendance.startAttendance;
         Attendance endAttendance = dayAttendance.endAttendance;
         if (null != startAttendance) {
-            dayResult.startTime = startAttendance.toString();
+            dayResult.startTime = startAttendance.toString()
             //检测上班卡是否迟到
             if (startAttendance.dayTimeMillis > startEmployeeTime) {
-                dayResult.type |= AttendanceType.LATE;
+                dayResult.type |= AttendanceType.LATE
             } else {
-                dayResult.type |= AttendanceType.TO_WORK;
+                dayResult.type |= AttendanceType.TO_WORK
             }
         } else {
-            dayResult.type |= AttendanceType.UN_CHECK_IN;//上班卡未打
+            dayResult.type |= AttendanceType.UN_CHECK_IN//上班卡未打
         }
         //下班卡
         if (null != endAttendance) {
-            dayResult.endTime = endAttendance.toString();
+            dayResult.endTime = endAttendance.toString()
             if (null != startAttendance) {
                 //工作时长,正常上班总时间减去实际时间,如果早上没迟到,则按工作时长计算,否则按下班时间算
                 if(0!=(dayResult.type&AttendanceType.LATE)){
@@ -256,9 +256,14 @@ class Analyser {
         if (null != startAttendance && null != endAttendance) {
             int workMinute = (endAttendance.hour * 60 + endAttendance.minute) - (startAttendance.hour * 60 + startAttendance.minute);
             //超出几小时,算加班
-            dayResult.overMinute = workMinute - (endEmployeeTime-startEmployeeTime)/60/1000;//加班时长(分)
+            int normalMinute=(endEmployeeTime-startEmployeeTime)/60/1000
+            dayResult.workMinute=workMinute//工作时长(分)
+            dayResult.overMinute = workMinute - normalMinute;//加班时长(分)
             if (0<dayResult.overMinute&&dayResult.overMinute >= minWorkHour * 60) {
                 dayResult.type |= AttendanceType.OVER_TIME;
+            } else if(workMinute<(normalMinute-1*60)){
+                //工作时间小于正常工作时间1小时,记录未知状态,此时可能请假,出差
+                dayResult.type |= AttendanceType.UN_KNOW_WORK_TIME;
             }
         }
     }

@@ -192,7 +192,7 @@ class ExcelWriter extends AbsExcelWriter{
                 AttendanceResult result = resultEntry.getValue();
                 int type = result.type;
                 int overHour = result.overMinute / 60;
-                for(int attendanceType=AttendanceType.LATE;attendanceType<=AttendanceType.HOLIDAY_OVER_TIME;attendanceType*=2){
+                for(int attendanceType=AttendanceType.LATE;attendanceType<=AttendanceType.UN_KNOW_WORK_TIME;attendanceType*=2){
                     if(0!=(type&attendanceType)){
                         //上下班不正常,平时加班,周末加班.都记录下名字,待下方添加异常数据
                         //这里,操作了.直接++,将位置下移
@@ -252,6 +252,13 @@ class ExcelWriter extends AbsExcelWriter{
                                 sheet.addCell(new Label(6, index, workStartDate=result.startTime, getCellFormat(Alignment.LEFT)));
                                 sheet.addCell(new Label(7, index, workEndDate=result.endTime, getCellFormat(Alignment.LEFT)));
                                 sheet.addCell(new Label(8, index, remark="假日(${overHour}H)", getCellFormat(COLOR_HOLIDAY_OVER_TIME)));
+                                break;
+                            case AttendanceType.UN_KNOW_WORK_TIME:
+                                sheet.addCell(new Label(5, index, workDate=year + "/" + month + "/" + today, getCellFormat(Alignment.LEFT)));
+                                sheet.addCell(new Label(6, index, workStartDate=result.startTime, getCellFormat(Alignment.LEFT)));
+                                sheet.addCell(new Label(7, index, workEndDate=result.endTime, getCellFormat(Alignment.LEFT)));
+                                def workHour=String.format("%.1f", result.workMinute/60)
+                                sheet.addCell(new Label(8, index, remark="出差/时假(${workHour}H)", getCellFormat(COLOR_HOLIDAY_OVER_TIME)));
                                 break;
                         }
                         int itemIndex=0

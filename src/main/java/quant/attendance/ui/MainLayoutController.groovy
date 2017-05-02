@@ -2,6 +2,7 @@ package quant.attendance.ui
 
 import com.google.common.io.Files
 import com.jfoenix.controls.JFXButton
+import com.jfoenix.controls.JFXCheckBox
 import com.jfoenix.controls.JFXDialog
 import com.jfoenix.controls.JFXSnackbar
 import com.jfoenix.controls.JFXTreeTableColumn
@@ -9,6 +10,8 @@ import com.jfoenix.controls.JFXTreeTableView
 import com.jfoenix.controls.RecursiveTreeItem
 import com.sun.javafx.PlatformUtil
 import javafx.application.Platform
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.Event
@@ -39,6 +42,7 @@ import quant.attendance.util.AnalyserUnKnow
 import quant.attendance.util.FileUtils
 import quant.attendance.widget.drag.DragTextField
 import rx.Observable
+import rx.Subscription
 import rx.schedulers.Schedulers
 
 import java.time.LocalDate
@@ -61,6 +65,7 @@ class MainLayoutController implements Initializable{
     @FXML JFXTreeTableColumn employeeEntryName
     @FXML JFXTreeTableColumn employeeStartTime
     @FXML JFXTreeTableColumn employeeEndTime
+    @FXML JFXCheckBox checkBox
 
     @FXML JFXDialog unKnowDialog
     @FXML JFXButton acceptButton
@@ -99,6 +104,10 @@ class MainLayoutController implements Initializable{
         dialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
         dialogCancelButton.setOnMouseClicked({dialog.close()})
 
+        //待确认员工信息
+        checkBox.selectedProperty().addListener({observable,oldValue,newValue->
+            unKnowProperties.each { it.selected.setValue(newValue) }
+        } as ChangeListener<Boolean>)
         unKnowDialog.setTransitionType(JFXDialog.DialogTransition.CENTER)
         unKnowDialog.setOverlayClose(false)//点击外围不消失
         cancelButton.setOnMouseClicked({
@@ -255,54 +264,59 @@ class MainLayoutController implements Initializable{
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("请选择一个excel文件!",null,2000, null))
         } else {
             Observable.create({ sub ->
-                def attendanceItems=new ExcelReaderA().attendanceRead(file)
-                def selectDepartment=departmentTable.selectionModel.selectedItem.value.toItem()
-                def selectEmployeeItems=employeeItems.findAll {it.departmentId==selectDepartment.id}
+                def attendanceItems = new ExcelReaderA().attendanceRead(file)
+                def selectDepartment = departmentTable.selectionModel.selectedItem.value.toItem()
+                def selectEmployeeItems = employeeItems.findAll { it.departmentId == selectDepartment.id }
                 //获得日期模板
-                def holidayItems=getHolidayItems()
-                def holidays=holidayItems.get(LocalDate.now().year)
-                if(!holidays){
+                def holidayItems = getHolidayItems()
+                def holidays = holidayItems.get(LocalDate.now().year)
+                if (!holidays) {
                     //TODO 配置模板提示
                 } else {
-                    def writeExcelClosure={unKnowItems->
-                        def analyser=new Analyser(attendanceItems,selectDepartment,selectEmployeeItems,holidays,unKnowItems)
-                        def result=analyser.result()
-                        def excelWriter=new ExcelWriter(analyser.startDateTime,analyser.endDateTime,result,selectDepartment,selectEmployeeItems,holidays,unKnowItems)
+                    def writeExcelClosure = { unKnowItems ->
+                        def analyser = new Analyser(attendanceItems, selectDepartment, selectEmployeeItems, holidays, unKnowItems)
+                        def result = analyser.result()
+                        def excelWriter = new ExcelWriter(analyser.startDateTime, analyser.endDateTime, result, selectDepartment, selectEmployeeItems, holidays, unKnowItems)
                         sub.onNext(excelWriter.writeExcel())
                         sub.onCompleted()
                     }
-                    def analyserUnKnow=new AnalyserUnKnow(attendanceItems)
-                    def unKnowItems=analyserUnKnow.analyzerUnKnowItems()
-                    if(unKnowItems){
+                    def analyserUnKnow = new AnalyserUnKnow(attendanceItems,holidays)
+                    def unKnowItems = analyserUnKnow.analyzerUnKnowItems()
+                    if (unKnowItems) {
                         //存在未知条目,通知用户确认
-                        Platform.runLater({
+                        Platform.runLater{
                             unKnowProperties.clear()
-                            unKnowItems.each {unKnowProperties.add(it.toProperty())}
+                            unKnowItems.each { unKnowProperties.add(it.toProperty()) }
                             unKnowTable.refresh()
-                            acceptButton.setOnMouseClicked({
+                            acceptButton.setOnMouseClicked{
                                 //过滤未选择员工
-                                unKnowItems.removeAll { item-> !unKnowProperties.find {item.name==it.name.value}.selected.value }
+                                unKnowItems.removeAll { item ->
+                                    !unKnowProperties.find {
+                                        item.name == it.name.value
+                                    }.selected.value
+                                }
                                 writeExcelClosure.call(unKnowItems)
                                 unKnowDialog.close()
-                            })
+                            }
+                            checkBox.setSelected(true)
                             unKnowDialog.show(root)
-                        })
+                        }
                     } else {
                         writeExcelClosure.call(null)
                     }
                 }
             }).subscribeOn(Schedulers.io()).
                     observeOn(MainThreadSchedulers.mainThread()).
-                    subscribe({ target->
+                    subscribe({ target ->
                         saveButton.setDisable(false)
                         openButton.setDisable(false)
-                        final def stage=StageManager.instance.getStage(this)
-                        saveButton.setOnMouseClicked({saveExcelFile(stage,target)})
+                        final def stage = StageManager.instance.getStage(this)
+                        saveButton.setOnMouseClicked({ saveExcelFile(stage, target) })
                         //打开文件
                         openButton.setOnMouseClicked({
-                            if(PlatformUtil.mac){
+                            if (PlatformUtil.mac) {
                                 "open $target.absolutePath".execute()
-                            } else if(PlatformUtil.windows){
+                            } else if (PlatformUtil.windows) {
                                 "cmd  /c  start  $target.absolutePath".execute()
                             }
                         })
@@ -325,6 +339,7 @@ class MainLayoutController implements Initializable{
             }
             Files.copy(target,file)
             !target.exists()?:target.delete()
+            snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("保存文件${file.name}成功!",null,2000, null))
         }
     }
 

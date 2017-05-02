@@ -16,6 +16,7 @@ public class AttendanceResult {
     public String departureDate;//离职日期
     public boolean isWeekend;//周末
     public int overMinute;//加班时间(分)
+    public int workMinute;
     public int type;
 
     public AttendanceResult(String name, int day) {

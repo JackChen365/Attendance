@@ -13,6 +13,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.CheckBox?>
 <StackPane fx:id="root"
 		   fx:controller="quant.attendance.ui.MainLayoutController"
 		   xmlns:fx="http://javafx.com/fxml/1"
@@ -125,21 +126,29 @@
 				<Label text="请确认部分异常考勤员工"/>
 			</heading>
 			<body>
-				<JFXTreeTableView fx:id="unKnowTable" editable="true" prefWidth="540"  minWidth="100" >
-					<GridPane.margin>
-						<Insets  right="12" top="12"/>
-					</GridPane.margin>
-					<columns>
-						<JFXTreeTableColumn fx:id="unKnowEmployeeCell"
-											text="员工" minWidth="0" prefWidth="80" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
-						<JFXTreeTableColumn fx:id="entryDateCell"
-											text="待确认入职时间" minWidth="0" prefWidth="160" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
-						<JFXTreeTableColumn fx:id="departureDateCell"
-											text="待确认离职时间" minWidth="0" prefWidth="160" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
-						<JFXTreeTableColumn fx:id="acceptCell"
-											text="确认" minWidth="0" prefWidth="120"  style="-fx-alignment: center;-fx-text-alignment: center;"/>
-					</columns>
-				</JFXTreeTableView>
+				<VBox>
+					<JFXTreeTableView fx:id="unKnowTable" editable="true" prefWidth="540"  minWidth="100" >
+						<VBox.margin>
+							<Insets  right="12" top="12"/>
+						</VBox.margin>
+						<columns>
+							<JFXTreeTableColumn fx:id="unKnowEmployeeCell"
+												text="员工" minWidth="0" prefWidth="80" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="entryDateCell"
+												text="待确认入职时间" minWidth="0" prefWidth="160" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="departureDateCell"
+												text="待确认离职时间" minWidth="0" prefWidth="160" style="-fx-alignment: center;-fx-text-alignment: center; -fx-padding: 0 12 0 12"/>
+							<JFXTreeTableColumn fx:id="acceptCell"
+												text="确认" minWidth="0" prefWidth="120"  style="-fx-alignment: center;-fx-text-alignment: center;"/>
+						</columns>
+					</JFXTreeTableView>
+
+					<JFXCheckBox fx:id="checkBox" text="全选/反选" selected="true" >
+						<VBox.margin>
+							<Insets top="12"/>
+						</VBox.margin>
+					</JFXCheckBox>
+				</VBox>
 			</body>
 			<actions>
 				<JFXButton fx:id="cancelButton" styleClass="dialog-accept" text="取消"/>
