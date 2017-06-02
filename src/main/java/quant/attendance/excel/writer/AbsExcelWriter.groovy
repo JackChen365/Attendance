@@ -33,10 +33,11 @@ import static jxl.format.Colour.LIGHT_TURQUOISE2 as COLOR_LEVEL_EARLY
 import static jxl.format.Colour.PINK2 as COLOR_OVER_TIME
 import static jxl.format.Colour.PLUM2 as COLOR_WEEKEND_OVER_TIME
 import static jxl.format.Colour.TEAL2 as COLOR_HOLIDAY_OVER_TIME
+import static jxl.format.Colour.YELLOW2 as COLOR_UN_KNOW_WORK
 /**
  * Created by cz on 2017/4/14.
  */
-abstract class AbsExcelWriter {
+abstract class  AbsExcelWriter {
     private final HashMap<String, HashMap<Integer, AttendanceResult>> results;
     private final List<Employee> employeeItems;
     DepartmentRest departmentRest
@@ -73,6 +74,7 @@ abstract class AbsExcelWriter {
         addColorItem(PrefsKey.COLOR_OVER_TIME,Color.GREEN,COLOR_OVER_TIME)
         addColorItem(PrefsKey.COLOR_WEEKEND_OVER_TIME,Color.GREENYELLOW,COLOR_WEEKEND_OVER_TIME)
         addColorItem(PrefsKey.COLOR_HOLIDAY_OVER_TIME,Color.YELLOW,COLOR_HOLIDAY_OVER_TIME)
+        addColorItem(PrefsKey.COLOR_UN_KNOW_WORK,Color.DEEPPINK,COLOR_UN_KNOW_WORK)
     }
 
     void addColorItem(key,Color defaultColor,colour){

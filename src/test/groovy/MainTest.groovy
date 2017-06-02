@@ -79,5 +79,5 @@ def testRead(){
     }
 }
 
-testRead()
+testFunc()
 //testReader()

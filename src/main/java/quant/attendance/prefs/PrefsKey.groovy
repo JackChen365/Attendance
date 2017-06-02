@@ -16,4 +16,5 @@ public interface PrefsKey {
     String COLOR_OVER_TIME="over_time"
     String COLOR_WEEKEND_OVER_TIME="weekend_over_time"
     String COLOR_HOLIDAY_OVER_TIME="holiday_over_time"
+    String COLOR_UN_KNOW_WORK="un_know_work"
 }

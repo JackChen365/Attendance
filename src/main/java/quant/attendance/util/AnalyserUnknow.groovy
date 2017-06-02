@@ -13,9 +13,10 @@ import java.time.ZoneId
  */
 class AnalyserUnKnow {
     final HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems
-
-    AnalyserUnKnow(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems) {
+    final def holidays=[]
+    AnalyserUnKnow(HashMap<String, HashMap<Integer, ArrayList<Attendance>>> attendanceItems,holidays) {
         this.attendanceItems = [:]
+        !holidays?:this.holidays.addAll(holidays)
         if(attendanceItems){
             this.attendanceItems.putAll(attendanceItems)
         }
@@ -39,10 +40,25 @@ class AnalyserUnKnow {
             }
         }
         //分析出勤信息
-        def startDateTime=LocalDateTime.ofInstant(new Date(startSecondMillis).toInstant(),ZoneId.systemDefault())
-        def endDateTime=LocalDateTime.ofInstant(new Date(endSecondMillis).toInstant(),ZoneId.systemDefault())
+        def startDateTime=getNormalDate(LocalDateTime.ofInstant(new Date(startSecondMillis).toInstant(),ZoneId.systemDefault()).toLocalDate(),true)
+        def endDateTime=getNormalDate(LocalDateTime.ofInstant(new Date(endSecondMillis).toInstant(),ZoneId.systemDefault()).toLocalDate(),false)
         [startDateTime,endDateTime]
     }
+
+    /**
+     * 获得正常的月考勤日期,因最大结束日期可能存在节假日信息
+     */
+    def getNormalDate(LocalDate localDate,boolean previous){
+        def findClosure={ date-> holidays.find {it.year==date.year&&it.month==date.monthValue&&it.day==date.dayOfMonth} }
+        def holiday=findClosure.call(localDate)
+        while(holiday&&!holiday.isWork){
+            localDate=localDate.plusDays(previous?1:-1)
+            holiday=findClosure.call(localDate)
+        }
+        localDate
+    }
+
+
 
     /**
      * 分析月初未上班人群,以及月末未上班人群,可能存在,新入职人员,以及离职人员,供用户查看

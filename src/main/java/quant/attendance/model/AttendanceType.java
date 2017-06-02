@@ -58,6 +58,10 @@ public interface AttendanceType {
      */
     int HOLIDAY_OVER_TIME=0x200;
     /**
+     * 可能请假
+     */
+    int UN_KNOW_WORK_TIME=0x400;
+    /**
      * 正常上班
      */
     int NORMA = TO_WORK | OFF_WORK;

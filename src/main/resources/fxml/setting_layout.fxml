@@ -110,6 +110,17 @@
 				<Insets top="8" bottom="8" />
 			</GridPane.margin>
 		</JFXColorPicker>
+
+		<Label text="出差/时假"  GridPane.rowIndex="11" GridPane.columnIndex="0">
+			<GridPane.margin >
+				<Insets left="12" right="12" />
+			</GridPane.margin>
+		</Label>
+		<JFXColorPicker fx:id="unKnowWorkColorPicker" prefWidth="160" GridPane.rowIndex="11" GridPane.columnIndex="1">
+			<GridPane.margin >
+				<Insets top="8" bottom="8" />
+			</GridPane.margin>
+		</JFXColorPicker>
 	</GridPane>
 	<JFXSnackbar fx:id="snackBar" prefWidth="420" />
 </StackPane>

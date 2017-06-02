@@ -30,6 +30,7 @@ class SettingController implements Initializable{
     @FXML JFXColorPicker workColorPicker
     @FXML JFXColorPicker weekWorkColorPicker
     @FXML JFXColorPicker holidayWorkColorPicker
+    @FXML JFXColorPicker unKnowWorkColorPicker
 
     @Override
     void initialize(URL location, ResourceBundle resources) {
@@ -47,7 +48,7 @@ class SettingController implements Initializable{
         setColorPickerValue(workColorPicker,PrefsKey.COLOR_OVER_TIME,Color.GREEN)
         setColorPickerValue(weekWorkColorPicker,PrefsKey.COLOR_WEEKEND_OVER_TIME,Color.GREENYELLOW)
         setColorPickerValue(holidayWorkColorPicker,PrefsKey.COLOR_HOLIDAY_OVER_TIME,Color.YELLOW)
-
+        setColorPickerValue(unKnowWorkColorPicker,PrefsKey.COLOR_UN_KNOW_WORK,Color.DEEPPINK)
     }
 
     void setColorPickerValue(colorPicker,key,defaultValue){
