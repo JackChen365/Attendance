@@ -5,7 +5,7 @@ import java.time.LocalTime;
 /**
  * Created by cz on 4/23/16.
  */
-public class Attendance {
+public class Attendance implements Cloneable{
     public String department;
     public String name;
     public int year;
@@ -32,5 +32,20 @@ public class Attendance {
         }
         Attendance item = (Attendance) obj;
         return timeMillis > item.timeMillis;
+    }
+
+    @Override
+    public Attendance clone() {
+        Attendance newItem=new Attendance();
+        newItem.department=department;
+        newItem.name=name;
+        newItem.year=year;
+        newItem.month=month;
+        newItem.day=day;
+        newItem.hour=hour;
+        newItem.minute=minute;
+        newItem.second=second;
+        newItem.timeMillis=timeMillis;
+        return newItem;
     }
 }

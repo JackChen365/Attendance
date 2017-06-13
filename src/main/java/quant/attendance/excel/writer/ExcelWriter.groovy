@@ -259,7 +259,7 @@ class ExcelWriter extends AbsExcelWriter{
                                 sheet.addCell(new Label(6, index, workStartDate=result.startTime, getCellFormat(Alignment.LEFT)));
                                 sheet.addCell(new Label(7, index, workEndDate=result.endTime, getCellFormat(Alignment.LEFT)));
                                 def workHour=String.format("%.1f", result.workMinute/60)
-                                sheet.addCell(new Label(8, index, remark="出差/时假(${workHour}H)", getCellFormat(COLOR_UN_KNOW_WORK)));
+                                sheet.addCell(new Label(8, index, remark="事假(${workHour}H)", getCellFormat(COLOR_UN_KNOW_WORK)));
                                 break;
                         }
                         int itemIndex=0
@@ -342,11 +342,11 @@ class ExcelWriter extends AbsExcelWriter{
 
             int weekendOverTimeDays
             (workHour,weekendOverTimeDays)=getAttendanceWeekOverWorkDays(it.value,AttendanceType.WEEKEND_OVER_TIME)
-            def weekendOverTime=0==weekendOverTimeDays?"#":"${workHour}时/${weekendOverTimeDays}天"
+            def weekendOverTime=0==weekendOverTimeDays?"#":"${weekendOverTimeDays}天"
             sheet.addCell(new Label(14, index, weekendOverTime, getCellFormat(0==weekendOverTimeDays?jxl.format.Colour.WHITE:COLOR_WEEKEND_OVER_TIME)));//周末加班/天数
             int holidayOverTimeDays
             (workHour,holidayOverTimeDays)=getAttendanceWeekOverWorkDays(it.value,AttendanceType.HOLIDAY_OVER_TIME)
-            def holidayOverTime=0==holidayOverTimeDays?"#":"${workHour}时/${holidayOverTimeDays}天"
+            def holidayOverTime=0==holidayOverTimeDays?"#":"${holidayOverTimeDays}天"
             sheet.addCell(new Label(15, index, holidayOverTime, getCellFormat(0==holidayOverTime?jxl.format.Colour.WHITE:COLOR_HOLIDAY_OVER_TIME)));//假日加班/天数
 
             sheet.addCell(new Label(16, index, getAttendanceWorkDays(it.value) as String, getCellFormat()));//实际出勤/天
