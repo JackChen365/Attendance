@@ -1,7 +1,9 @@
 import groovy.io.FileType
+import quant.attendance.excel.reader.ExcelEmployeeAttendanceReader
 import quant.attendance.excel.reader.ExcelReaderA
 import quant.attendance.excel.reader.ExcelReaderB
 import quant.attendance.excel.reader.ExcelReaderC
+import quant.attendance.excel.reader.ExcelRestCodeReader
 import quant.attendance.util.Analyser
 
 import java.time.LocalDate
@@ -71,7 +73,7 @@ def testFunc(){
 }
 
 def testRead(){
-    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\考勤记录4.20-5.20.xls")
+    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\模板.xls")
     def attendanceItems=new ExcelReaderC().attendanceRead(file)
     println attendanceItems
 }

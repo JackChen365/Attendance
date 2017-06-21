@@ -194,8 +194,8 @@ class MainLayoutController implements Initializable{
         final MenuItem importEmployee= new MenuItem("批量导入员工信息");
         newEmployeeItem.setOnAction({handleNewEmployeeAction()})
         deleteAllSelectedItem.setOnAction({ employeeProperties.isEmpty()?: deleteSelectEmployee(employeeTable.selectionModel.selectedItem.value) })
-        importEmployee.setOnAction{}
-        menu.getItems().addAll(newEmployeeItem,deleteAllSelectedItem);
+        importEmployee.setOnAction{StageManager.instance.newStage(getClass().getClassLoader().getResource("fxml/import_employee.fxml"),true, 640, 720)?.show()}
+        menu.getItems().addAll(newEmployeeItem,deleteAllSelectedItem,importEmployee);
         employeeTable.setContextMenu(menu);
     }
 

@@ -3,7 +3,6 @@ package quant.attendance.excel.reader
 import jxl.Cell
 import jxl.Sheet
 import jxl.Workbook
-import jxl.read.biff.DateRecord
 import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.Attendance
 import quant.attendance.util.TextUtils
@@ -22,24 +21,24 @@ class ExcelReaderC extends AbsExcelReader{
     def readWorkBook(Workbook workbook) {
         HashMap<String, HashMap<Integer, ArrayList<Attendance>>> items = new HashMap<>();
         //获取文件的指定工作表 默认的第一个
-        Sheet sheet = workbook.getSheet(1);
+        Sheet sheet = workbook.getSheet(2);
         int rows = sheet.getRows();
         Pattern pattern1 = Pattern.compile("(\\d{1,4})[/|-](\\d{1,2})[/|-](\\d{1,2})");//匹配日期
         Pattern pattern2 = Pattern.compile("(\\d{1,2})[:|-](\\d{1,2})[:|-](\\d{1,2})");//匹配时间
         //行数(表头的目录不需要，从1开始)
         String employeeName = null;
         def employeeNameItems=[] as Set
-        for (int i = 2; i < rows; i++) {
+        for (int i = 1; i < rows; i++) {
             Cell[] cells = sheet.getRow(i);
             if (null != cells && 0 < cells.length) {
                 def attendanceItems=[]
                 Attendance attendance = new Attendance();
-                for (int k = 0; k < cells.length; k++) {
+                for (int k = 1; k < cells.length; k++) {
                     Cell cell = cells[k];
                     String contents = cell.getContents();
                     if (TextUtils.isEmpty(contents.trim())) continue;
                     switch (k) {
-                        case 0:
+                        case 1:
                             //记录姓名
                             employeeName = contents
                             attendance.name = contents
@@ -48,10 +47,10 @@ class ExcelReaderC extends AbsExcelReader{
                                 InformantRegistry.instance.notifyMessage("分析员工:$attendance.name")
                             }
                             break;
-                        case 1:
+                        case 2:
                             //记录部门
                             attendance.department=contents
-                        case 2:
+                        case 3:
                             //考勤日期
                             Matcher matcher = pattern1.matcher(contents);
                             if (matcher.find()) {
@@ -66,7 +65,7 @@ class ExcelReaderC extends AbsExcelReader{
                             break;
                         default:
                             Matcher matcher = pattern2.matcher(contents);
-                            if (matcher.find()) {
+                            while (matcher.find()) {
                                 def newItem = attendance.clone()
                                 if(!TextUtils.isEmpty(matcher.group(1))&&
                                         !TextUtils.isEmpty(matcher.group(2))){
