@@ -191,8 +191,10 @@ class MainLayoutController implements Initializable{
         final ContextMenu menu = new ContextMenu();
         final MenuItem newEmployeeItem= new MenuItem("新的员工");
         final MenuItem deleteAllSelectedItem= new MenuItem("删除选中员工");
+        final MenuItem importEmployee= new MenuItem("批量导入员工信息");
         newEmployeeItem.setOnAction({handleNewEmployeeAction()})
         deleteAllSelectedItem.setOnAction({ employeeProperties.isEmpty()?: deleteSelectEmployee(employeeTable.selectionModel.selectedItem.value) })
+        importEmployee.setOnAction{}
         menu.getItems().addAll(newEmployeeItem,deleteAllSelectedItem);
         employeeTable.setContextMenu(menu);
     }
