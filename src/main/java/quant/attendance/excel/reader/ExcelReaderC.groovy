@@ -7,6 +7,7 @@ import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.Attendance
 import quant.attendance.util.TextUtils
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.regex.Matcher
@@ -19,7 +20,7 @@ class ExcelReaderC extends AbsExcelReader{
 
     @Override
     def readWorkBook(Workbook workbook) {
-        HashMap<String, HashMap<Integer, ArrayList<Attendance>>> items = new HashMap<>();
+        HashMap<String, HashMap<LocalDate, ArrayList<Attendance>>> items = new HashMap<>();
         //获取文件的指定工作表 默认的第一个
         Sheet sheet = workbook.getSheet(2);
         int rows = sheet.getRows();
@@ -79,15 +80,17 @@ class ExcelReaderC extends AbsExcelReader{
                             break
                     }
                 }
+                if(0==attendance.day) continue
                 HashMap<Integer, ArrayList<Attendance>> attendancesItems = items.get(employeeName);
                 if (!attendancesItems) {
                     attendancesItems = [:]
                     items.put(employeeName, attendancesItems);
                 }
-                ArrayList<Attendance> attendances = attendancesItems.get(attendance.day);
+                def localDate = LocalDate.of(attendance.year, attendance.month, attendance.day)
+                ArrayList<Attendance> attendances = attendancesItems.get(localDate);
                 if (!attendances) {
                     attendances = [];
-                    attendancesItems.put(attendance.day, attendances);
+                    attendancesItems.put(localDate, attendances);
                 }
                 attendances.addAll(attendanceItems)
             }

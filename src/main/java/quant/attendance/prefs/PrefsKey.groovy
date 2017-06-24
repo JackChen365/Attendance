@@ -7,6 +7,8 @@ public interface PrefsKey {
     String INIT="init"
     String VERSION="version"
     String WORK_HOUR="work_hour"
+    String START_DAY="start_day"
+    String END_DAY="end_day"
 
     String COLOR_LATE="late"
     String COLOR_LEVEL_EARLY="level_early"

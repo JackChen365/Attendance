@@ -13,11 +13,14 @@ import quant.attendance.model.DepartmentRest
 import quant.attendance.model.Employee
 import quant.attendance.model.EmployeeRest
 import quant.attendance.model.UnKnowAttendanceItem
+import quant.attendance.model.dynamic.EmployeeAttendance
+import quant.attendance.model.dynamic.RestCodeItem
 import quant.attendance.prefs.PrefsKey
 import quant.attendance.prefs.SharedPrefs
 import quant.attendance.util.IOUtils
 import quant.attendance.util.TextUtils
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.regex.Matcher
 
@@ -38,15 +41,17 @@ import static jxl.format.Colour.YELLOW2 as COLOR_UN_KNOW_WORK
  * Created by cz on 2017/4/14.
  */
 abstract class  AbsExcelWriter {
-    private final HashMap<String, HashMap<Integer, AttendanceResult>> results;
-    private final List<Employee> employeeItems;
+    final HashMap<String, HashMap<LocalDate, AttendanceResult>> results;
+    final List<Employee> employeeItems;
     DepartmentRest departmentRest
     LocalDateTime startDateTime, endDateTime;
     final List<UnKnowAttendanceItem> unKnowItems=[]
     final Map<String,RGB> colorItems=[:]
+    final Map<String,List<EmployeeAttendance>> employeeAttendanceItems
+    final Map<String,RestCodeItem> restCodeItems
     final def holidayItems
 
-    public AbsExcelWriter(LocalDateTime startDateTime,LocalDateTime endDateTime, HashMap<String, HashMap<Integer, AttendanceResult>> results,DepartmentRest departmentRest,employeeItems,holidayItems,unKnowItems) {
+    public AbsExcelWriter(LocalDateTime startDateTime, LocalDateTime endDateTime, HashMap<String, HashMap<LocalDate, AttendanceResult>> results, DepartmentRest departmentRest, employeeItems, holidayItems, unKnowItems,employeeAttendanceItems,restCodeItems) {
         this.startDateTime=startDateTime;
         this.endDateTime=endDateTime;
         this.departmentRest=departmentRest
@@ -64,7 +69,8 @@ abstract class  AbsExcelWriter {
             InformantRegistry.getInstance().notifyMessage("员工集为空!");
         }
         !unKnowItems?:this.unKnowItems.addAll(unKnowItems)
-
+        this.employeeAttendanceItems=employeeAttendanceItems
+        this.restCodeItems=restCodeItems
         //初始化配置颜色
         addColorItem(PrefsKey.COLOR_LATE,Color.BISQUE,COLOR_LATE)
         addColorItem(PrefsKey.COLOR_LEVEL_EARLY,Color.AZURE,COLOR_LEVEL_EARLY)
@@ -174,5 +180,5 @@ abstract class  AbsExcelWriter {
      * @throws WriteException
      */
     abstract void write(WritableWorkbook wwb,LocalDateTime startDateTime,LocalDateTime endDateTime,
-                        HashMap<String, HashMap<Integer, AttendanceResult>> results,List<EmployeeRest> employeeItems,holidayItems) throws WriteException
+                        HashMap<String, HashMap<LocalDate, AttendanceResult>> results,List<EmployeeRest> employeeItems,holidayItems) throws WriteException
 }

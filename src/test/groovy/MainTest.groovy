@@ -1,10 +1,5 @@
 import groovy.io.FileType
-import quant.attendance.excel.reader.ExcelEmployeeAttendanceReader
-import quant.attendance.excel.reader.ExcelReaderA
 import quant.attendance.excel.reader.ExcelReaderB
-import quant.attendance.excel.reader.ExcelReaderC
-import quant.attendance.excel.reader.ExcelRestCodeReader
-import quant.attendance.util.Analyser
 
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -71,12 +66,17 @@ def testFunc(){
         println it
     }
 }
+def testLocalDate(){
 
-def testRead(){
-    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\模板.xls")
-    def attendanceItems=new ExcelReaderC().attendanceRead(file)
-    println attendanceItems
+    def startDate = LocalDate.of(2017, 10, 15)
+    def endDate = LocalDate.of(2017, 9, 14)
+    println startDate.compareTo(endDate)
 }
-
+testLocalDate()
+//def testRead(){
+//    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\模板.xls")
+//    def attendanceItems=new ExcelReaderC().attendanceRead(file)
+//    println attendanceItems
+//}
 //testFunc()
-testRead()
+//testRead()

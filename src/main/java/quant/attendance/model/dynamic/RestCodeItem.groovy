@@ -8,6 +8,7 @@ class RestCodeItem {
     public String code
     public String startDate
     public long startTimeMillis
+    public boolean nextDay
     public String endDate
     public long endTimeMillis
     public float duration

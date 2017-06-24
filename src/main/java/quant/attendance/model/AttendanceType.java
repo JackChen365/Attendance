@@ -62,6 +62,10 @@ public interface AttendanceType {
      */
     int UN_KNOW_WORK_TIME=0x400;
     /**
+     * 休息
+     */
+    int WEEK=0x800;
+    /**
      * 正常上班
      */
     int NORMA = TO_WORK | OFF_WORK;

@@ -28,7 +28,10 @@ import quant.attendance.bus.RxBus
 import quant.attendance.database.DbHelper
 import quant.attendance.event.OnDepartmentAddedEvent
 import quant.attendance.event.OnEmployeeAddedEvent
+import quant.attendance.excel.reader.ExcelEmployeeAttendanceReader
 import quant.attendance.excel.reader.ExcelReaderA
+import quant.attendance.excel.reader.ExcelReaderC
+import quant.attendance.excel.reader.ExcelRestCodeReader
 import quant.attendance.excel.writer.ExcelWriter
 import quant.attendance.excel.InformantRegistry
 import quant.attendance.model.DepartmentProperty
@@ -46,6 +49,8 @@ import rx.Subscription
 import rx.schedulers.Schedulers
 
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  * Created by Administrator on 2017/4/8.
@@ -266,7 +271,9 @@ class MainLayoutController implements Initializable{
             snackBar.fireEvent(new JFXSnackbar.SnackbarEvent("请选择一个excel文件!",null,2000, null))
         } else {
             Observable.create({ sub ->
-                def attendanceItems = new ExcelReaderA().attendanceRead(file)
+                def attendanceItems = new ExcelReaderC().attendanceRead(file)
+                def employeeAttendanceItems = new ExcelEmployeeAttendanceReader().attendanceRead(file)
+                def restCodeItems = new ExcelRestCodeReader().attendanceRead(file)
                 def selectDepartment = departmentTable.selectionModel.selectedItem.value.toItem()
                 def selectEmployeeItems = employeeItems.findAll { it.departmentId == selectDepartment.id }
                 //获得日期模板
@@ -276,13 +283,13 @@ class MainLayoutController implements Initializable{
                     //TODO 配置模板提示
                 } else {
                     def writeExcelClosure = { unKnowItems ->
-                        def analyser = new Analyser(attendanceItems, selectDepartment, selectEmployeeItems, holidays, unKnowItems)
+                        def analyser = new Analyser(attendanceItems, selectDepartment, selectEmployeeItems, holidays, unKnowItems,employeeAttendanceItems,restCodeItems)
                         def result = analyser.result()
-                        def excelWriter = new ExcelWriter(analyser.startDateTime, analyser.endDateTime, result, selectDepartment, selectEmployeeItems, holidays, unKnowItems)
+                        def excelWriter = new ExcelWriter(analyser.startDateTime, analyser.endDateTime, result, selectDepartment, selectEmployeeItems, holidays, unKnowItems,employeeAttendanceItems,restCodeItems)
                         sub.onNext(excelWriter.writeExcel())
                         sub.onCompleted()
                     }
-                    def analyserUnKnow = new AnalyserUnKnow(attendanceItems,holidays)
+                    def analyserUnKnow = new AnalyserUnKnow(attendanceItems,employeeAttendanceItems,restCodeItems,holidays)
                     def unKnowItems = analyserUnKnow.analyzerUnKnowItems()
                     if (unKnowItems) {
                         //存在未知条目,通知用户确认
@@ -325,6 +332,7 @@ class MainLayoutController implements Initializable{
                     }, { e -> e.printStackTrace() })
         }
     }
+
 
     /**
      * 文件另类为

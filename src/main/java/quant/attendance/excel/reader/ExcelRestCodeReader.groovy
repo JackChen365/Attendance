@@ -20,7 +20,7 @@ class ExcelRestCodeReader extends AbsExcelReader{
         //获取文件的指定工作表 默认的第一个
         Sheet sheet = workbook.getSheet(0);
         int rows = sheet.getRows();
-        Pattern pattern = Pattern.compile("(?<ITEM1>(\\d{1,2})[:|：](\\d{1,2})-(\\d{1,2})[:|：](\\d{1,2}))|(?<ITEM2>(\\d{1,2})[:|：](\\d{1,2}))");//匹配日期
+        Pattern pattern = Pattern.compile("(?<ITEM1>(\\d{1,2})[:|：](\\d{1,2})-(\\d{1,2})[:|：](\\d{1,2}))|(?<ITEM2>(次日)?(\\d{1,2})[:|：](\\d{1,2}))");//匹配日期
         for (int i = 1; i < rows; i++) {
             Cell[] cells = sheet.getRow(i);
             if (null != cells && 0 < cells.length) {
@@ -33,12 +33,13 @@ class ExcelRestCodeReader extends AbsExcelReader{
                             item.code=contents
                             break;
                         case 1:
-                            def (hour,minute) = getContentTime(pattern, contents)
+                            def (hour,minute) = getContentTime(pattern, contents,true)
                             item.startDate="$hour:$minute"
                             item.startTimeMillis=LocalTime.of(hour,minute).toSecondOfDay()*1000
                             break;
                         case 2:
-                            def (hour,minute) = getContentTime(pattern, contents)
+                            def (hour,minute,nextDay) = getContentTime(pattern, contents)
+                            item.nextDay=nextDay
                             item.endDate="$hour:$minute"
                             item.endTimeMillis=LocalTime.of(hour,minute).toSecondOfDay()*1000
                             break;
@@ -47,25 +48,27 @@ class ExcelRestCodeReader extends AbsExcelReader{
                             break;
                     }
                 }
-                if("休"==item.code) item.code="WEEK"
-                items.put(RestCode.valueOf(item.code),item)
+                if("休"==item.code) item.code=RestCode.WEEK
+                items.put(item.code,item)
             }
         }
         return items
     }
 
-    def getContentTime(Pattern pattern,content){
+    def getContentTime(Pattern pattern,String content,boolean pre=false){
         def matcher = pattern.matcher(content)
         def hour,minute
+        def nextDay=false
         if(matcher){
              if(matcher.group("ITEM1")){
-                hour=matcher.group(2) as Integer
-                minute=matcher.group(3) as Integer
+                hour=matcher.group(pre?2:4) as Integer
+                minute=matcher.group(pre?3:5) as Integer
              } else if(matcher.group("ITEM2")){
-                hour=matcher.group(7) as Integer
-                minute=matcher.group(8) as Integer
+                nextDay=null!=matcher.group(7)
+                hour=matcher.group(8) as Integer
+                minute=matcher.group(9) as Integer
              }
         }
-        return [hour,minute]
+        return [hour,minute,nextDay]
     }
 }

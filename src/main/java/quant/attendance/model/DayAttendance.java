@@ -6,6 +6,7 @@ package quant.attendance.model;
 public class DayAttendance {
     public Attendance startAttendance;
     public Attendance endAttendance;
+    public Attendance overAttendance;
 
     public DayAttendance() {
     }
