@@ -72,7 +72,7 @@ def testLocalDate(){
     def endDate = LocalDate.of(2017, 9, 14)
     println startDate.compareTo(endDate)
 }
-testLocalDate()
+//testLocalDate()
 //def testRead(){
 //    def file=new File("C:\\Users\\Administrator\\Desktop\\JavaFx\\Attendance\\conf\\模板.xls")
 //    def attendanceItems=new ExcelReaderC().attendanceRead(file)

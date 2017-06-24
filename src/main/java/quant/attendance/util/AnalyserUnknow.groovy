@@ -101,9 +101,10 @@ class AnalyserUnKnow {
             def restCodeItem = getRestItemByDate(name, newDate)
             if(!restCodeItem){
                 localDate=next?endDate:startDate
-                break;
+                break
             } else if(restCodeItem.code!=RestCode.WEEK){
                 localDate=newDate
+                break
             }
             newDate=newDate.plusDays(1)
         }

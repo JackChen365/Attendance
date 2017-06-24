@@ -93,7 +93,7 @@ class Analyser {
             RestCodeItem lastRestItem=getRestItemByDate(name,newDate.plusDays(-1))
             DayAttendance lastDayAttendance
             while(0>=newDate.compareTo(endDate)){
-                HashMap<Integer, DayAttendance> newAttendanceItem = newAttendanceItems.get(name);
+                HashMap<LocalDate, DayAttendance> newAttendanceItem = newAttendanceItems.get(name);
                 if (null == newAttendanceItem) {
                     newAttendanceItem = new LinkedHashMap<>();
                     newAttendanceItems.put(name, newAttendanceItem);
@@ -104,6 +104,9 @@ class Analyser {
                 def items = attendanceItem.get(newDate)
                 //如果今天没有考勤记录,也不是休息日,记录一个空的考勤信息
                 items?.each {item ->
+                    //记录名称,所在部门
+                    dayAttendance.name=name
+                    dayAttendance.department=item.department
                     long startEmployeeTime=restCodeItem.startTimeMillis
                     long endEmployeeTime=restCodeItem.endTimeMillis
                     //今天休息,从昨天工作到今天.工作天数横跨一天
@@ -204,10 +207,9 @@ class Analyser {
             final int dayOfMonth = newDate.dayOfMonth;
             final int dayOfWeek = newDate.dayOfWeek.value
             final def findHolidayItem=holidayItems.find {it.month==month&&it.day==dayOfMonth}
-            def name="张满库"
-            def items=newAttendanceItems[name]
-//            newAttendanceItems.each {name, items->
+            newAttendanceItems.each {name, items->
                 //获取当天排班,上一天排班
+                final def department= items.findResult { it.value.department }
                 final RestCodeItem restCodeItem=getRestItemByDate(name,newDate)
                 final RestCodeItem lastRestCodeItem=getRestItemByDate(name,newDate.plusDays(-1))
                 //自定义设置休息
@@ -244,7 +246,7 @@ class Analyser {
                 //当存在考勤信息或者不为周末节日时,保存信息,或者员工入职时间等于/小于当天
                 LocalDateTime entryDateTime=employee?employee.entryDateTime():null
                 if((!entryDateTime||entryDateTime&&0<=newDate.compareTo(entryDateTime.toLocalDate()))&& (dayAttendance||!isWeekend)&&unCheckUnKnow){
-                    final AttendanceResult dayResult = new AttendanceResult(name, newDate.year,month,dayOfMonth);
+                    final AttendanceResult dayResult = new AttendanceResult(name,department, newDate.year,month,dayOfMonth);
                     //分析结果集
                     HashMap<LocalDate, AttendanceResult> resultItems = results.get(name);
                     if (null == resultItems) {
@@ -262,7 +264,7 @@ class Analyser {
                         dayResult.type |= AttendanceType.ABSENTEEISM;//缺勤
                     }
                 }
-//            }
+            }
             newDate=newDate.plusDays(1)
         }
         InformantRegistry.instance.notifyMessage("分析出勤信息完成!");

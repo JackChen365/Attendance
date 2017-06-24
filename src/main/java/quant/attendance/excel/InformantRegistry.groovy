@@ -24,11 +24,11 @@ class InformantRegistry {
      * @param message
      */
     public void notifyMessage(String message) {
-//        if(Platform.fxApplicationThread){
-//            listenerItems.each {it(message)}
-//        } else {
-//            Platform.runLater({ listenerItems.each {it(message)} })
-//        }
+        if(Platform.fxApplicationThread){
+            listenerItems.each {it(message)}
+        } else {
+            Platform.runLater({ listenerItems.each {it(message)} })
+        }
     }
 
     void addListener(consumer){

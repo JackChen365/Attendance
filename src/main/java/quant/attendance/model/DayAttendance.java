@@ -4,6 +4,8 @@ package quant.attendance.model;
  * Created by cz on 4/23/16.
  */
 public class DayAttendance {
+    public String name;
+    public String department;
     public Attendance startAttendance;
     public Attendance endAttendance;
     public Attendance overAttendance;

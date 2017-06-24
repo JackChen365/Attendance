@@ -23,8 +23,9 @@ public class AttendanceResult {
     public int workMinute;
     public int type;
 
-    public AttendanceResult(String name, int year, int month, int day) {
+    public AttendanceResult(String name,String department, int year, int month, int day) {
         this.name = name;
+        this.department=department;
         this.year = year;
         this.month = month;
         this.day = day;
